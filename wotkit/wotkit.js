@@ -116,6 +116,7 @@ module.exports = function(RED) {
                     msg.payload = chunk.toString('utf8');
                     if (res.statusCode !=200){
                         node.error ("Node "+node.name + ": "+payload);
+                        clearInterval(node.pollWotkitData);
                     }else{
                         if(json.length > 0)
                             node.send(msg);
