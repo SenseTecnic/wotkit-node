@@ -47,14 +47,20 @@ module.exports = function(RED) {
         }
         
         var method = "GET";
-        setInterval(function() {
+        node.pollWotkitData = setInterval(function() {
             HTTPGetRequest(url, method, node); 
         },timeout);
 
     }
     RED.nodes.registerType("wotkit in",WotkitIn,{
-
     });
+
+    WotkitIn.prototype.close = function(){
+        if (this.pollWotkitData != null) {
+            clearInterval(this.pollWotkitData);
+            this.log("poll: repeat stopped");
+        }
+    }
 
 
     function WotkitOut(n) {
