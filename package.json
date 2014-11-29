@@ -1,13 +1,17 @@
 {
     "name"         : "node-red-contrib-wotkit",
     "version"      : "0.0.1",
-    "description"  : "A sample node for node-red",
+    "description"  : "A node to integrate with the WoKit platform's API for sending and receving realtime sensor data",
     "dependencies": {
     },
-    "keywords": [ "node-red" ],
+    "repository" : {
+        "type":"git",
+        "url":"https://github.com/SenseTecnic/wotkit-node/tree/master/wotkit"
+    },
+    "keywords": [ "node-red", "wotkit" , "iot", "sensor"],
     "node-red"     : {
         "nodes": {
-            "sample": "sample/sample.js"
+            "wotkit": "wotkit/wotkit.js"
         }
     }
 }
