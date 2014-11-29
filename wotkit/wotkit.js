@@ -162,13 +162,7 @@ module.exports = function(RED) {
             var payload = null;
         
             if (msg.payload && (method == "POST" || method == "PUT") ) {
-                if (typeof msg.payload === "string" || Buffer.isBuffer(msg.payload)) {
-                    payload ={"message":msg.payload};
-                } else if (typeof msg.payload == "number") {
-                    payload = {"value":msg.payload};
-                } else {
-                }
-                payload = JSON.stringify(payload);
+                payload = JSON.stringify(msg.payload);
                 if (opts.headers['content-type'] == null) {
                             opts.headers['content-type'] = "application/json";
                 }
