@@ -33,22 +33,22 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,n);
         this.sensor = n.sensor;
         this.timeout = n.timeout;
+        this.lastId = null;
         var node = this;
         var sensor_name = node.sensor;
         var timeout = node.timeout;
-
-        // Retrieve the config node
-        this.login = RED.nodes.getNode(n.login);
-        //TODO: query for extra second, then filter out by id and timestamp
+        var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
+        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
         //TODO: if node is deleted, should stop interval, if interval value is modified , update that
         var url;
         if (this.login){
-            url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+timeout;
+            url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
         }
         
         var method = "GET";
+        
         node.pollWotkitData = setInterval(function() {
-            HTTPGetRequest(url, method, node); 
+            HTTPGetRequest(url, node); 
         },timeout);
 
     }
@@ -95,7 +95,7 @@ module.exports = function(RED) {
         }
     });
 
-    function HTTPGetRequest(url, method, node){
+    function HTTPGetRequest(url, node){
         var opts = urllib.parse(url);
             opts.method = "GET";
             
@@ -111,15 +111,27 @@ module.exports = function(RED) {
                 }).on('end', function() {
                     var msg = {};
                     var chunk=Buffer.concat(bodyChunks);
-                    var payload = chunk.toString('utf8');
-                    var json = JSON.parse(payload);
-                    msg.payload = chunk.toString('utf8');
+                    var message = chunk.toString('utf8');
+                    var payload = [];
+                    var json = JSON.parse(chunk.toString('utf8'));
                     if (res.statusCode !=200){
-                        node.error ("Node "+node.name + ": "+payload);
+                        node.error ("Node "+node.name + ": "+message);
                         clearInterval(node.pollWotkitData);
                     }else{
-                        if(json.length > 0)
+                        json.forEach(function(item, index){
+                            if (node.lastId == null  || node.lastId < item.id){
+                                payload.push(item);
+                            }
+                            if (index === json.length-1){
+                                node.lastId = item.id;
+                            }
+                        });
+                        if(payload.length > 0){
+                            node.log(JSON.stringify(payload));
+                            msg.payload = JSON.stringify(payload);
                             node.send(msg);
+                        }
+                        payload = [];
                     }
                     bodyChunks =[];
                     
