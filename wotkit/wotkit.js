@@ -117,17 +117,22 @@ module.exports = function(RED) {
                     }else{
                         json.forEach(function(item, index){
                             if (node.lastId == null  || node.lastId < item.id){
-                                payload.push(item);
-                            }
-                            if (index === json.length-1){
-                                node.lastId = item.id;
+                                // payload.push(item);
+                                if (index === json.length-1){
+                                    node.lastId = item.id;
+                                }
+                                delete item.id;
+                                delete item["sensor_id"];
+                                delete item["sensor_name"];
+                                msg.payload = item;
+                                node.send(msg);
                             }
                         });
-                        if(payload.length > 0){
-                            node.log(JSON.stringify(payload));
-                            msg.payload = JSON.stringify(payload);
-                            node.send(msg);
-                        }
+                        // if(payload.length > 0){
+                        //     node.log(JSON.stringify(payload));
+                        //     msg.payload = JSON.stringify(payload);
+                        //     node.send(msg);
+                        // }
                         payload = [];
                     }
                     bodyChunks =[];
@@ -169,11 +174,12 @@ module.exports = function(RED) {
                 res.setEncoding('utf8');
                 msg.statusCode = res.statusCode;
                 msg.headers = res.headers;
-                msg.payload = "";
+                var result = "";
                 res.on('data',function(chunk) {
-                    msg.payload += chunk;
+                    result += chunk;
                 });
                 res.on('end',function() {
+                    msg.payload = JSON.stringify(result);
                     node.send(msg);
                     node.status({});
 
