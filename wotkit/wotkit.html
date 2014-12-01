@@ -22,27 +22,17 @@
     <p>Provides an input node for WoTKit, allowing the creation of simple web services.</p>
     <p>The resulting message has the following properties:
         <ul>
-            <li>msg.req : <a href="http://expressjs.com/api.html#req">http request</a></li>
-            <li>msg.res : <a href="http://expressjs.com/api.html#res">http response</a></li>
+            <li>msg.payload : message payload</li>
         </ul>
     </p>
-    <p>For POST/PUT requests, the body is available under <code>msg.req.body</code>. This
-       uses the <a href="http://expressjs.com/api.html#bodyParser">Express bodyParser middleware</a> to parse the content to a JSON object.
+    <p>
+       To use this node, correct WoTKit login credentials must be provided to receive sensor data. 
     </p>
     <p>
-       By default, this expects the body of the request to be url encoded:
-       <pre>foo=bar&amp;this=that</pre>
+       WotKit Sensor Name should be in the form of "{username}.{sensor name}"
     </p>
     <p>
-       To send JSON encoded data to the node, the content-type header of the request must be set to
-       <code>application/json</code>.
-    </p>
-    <p>
-       <b>Note: </b>This node does not send any response to the http request. This should be done with
-       a subsequent HTTP Response node, or Function node.
-       In the case of a Function node, the <a href="http://expressjs.com/api.html#res">Express response documentation</a>
-       describes how this should be done. For example:
-       <pre>msg.res.send(200, 'Thanks for the request ');<br/>return msg;</pre>
+       <b>Note: </b>The poll interval will determine how frequent the node retrieves sensor data
     </p>
 
 </script>
@@ -60,18 +50,20 @@
         <label for="node-input-sensor"><i class="icon-tag"></i>WoTKit Sensor</label>
         <input type="text" id="node-input-sensor" placeholder="Sensor Name">
     </div>
-    <div class="form-tips">The messages sent to this node <b>must</b> originate from an <i>http input</i> node</div>
 </script>
 
 <script type="text/x-red" data-help-name="wotkit out">
-    <p>Sends responses back to WoTKit received from an HTTP Input node.</p>
+    <p>Sends responses back to WoTKit sensor received from an input node.</p>
     <p>The response can be customised using the following message properties:</p>
     <ul>
-        <li><code>payload</code> is sent as the body of the response</li>
-        <li><code>statusCode</code>, if set, is used as the response status code (default: 200)</li>
-        <li><code>headers</code>, if set, should be an object containing field/value
-        pairs to be added as response headers.</li>
+        <li><code>payload</code> is consists of the sensor fields and values</li>
     </ul>
+    <p>
+       To use this node, correct WoTKit login credentials must be provided to receive sensor data. 
+    </p>
+    <p>
+       WotKit Sensor Name should be in the form of "{username}.{sensor name}"
+    </p>
 </script>
 
 <script type="text/x-red" data-template-name="wotkit-credentials">
