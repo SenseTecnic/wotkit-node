@@ -43,13 +43,11 @@ module.exports = function(RED) {
         var url;
         if (this.login){
             url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
+            var method = "GET";
+            node.pollWotkitData = setInterval(function() {
+                HTTPGetRequest(url, node); 
+            },timeout);
         }
-        
-        var method = "GET";
-        
-        node.pollWotkitData = setInterval(function() {
-            HTTPGetRequest(url, node); 
-        },timeout);
 
     }
     RED.nodes.registerType("wotkit in",WotkitIn,{
@@ -58,7 +56,6 @@ module.exports = function(RED) {
     WotkitIn.prototype.close = function(){
         if (this.pollWotkitData != null) {
             clearInterval(this.pollWotkitData);
-            this.log("poll: repeat stopped");
         }
     }
 
