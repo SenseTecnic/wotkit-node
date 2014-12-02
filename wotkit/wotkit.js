@@ -32,25 +32,38 @@ module.exports = function(RED) {
 
         RED.nodes.createNode(this,n);
         this.sensor = n.sensor;
-        this.timeout = n.timeout;
         this.lastId = null;
         var node = this;
         var sensor_name = node.sensor;
-        var timeout = node.timeout;
-        var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
-        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
-        //TODO: if node is deleted, should stop interval, if interval value is modified , update that
-        var url;
-        if (this.login){
-            url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
+
+        if (n.timeoutUnits === "milliseconds") {
+            this.timeout = n.timeout;
+        } else if (n.timeoutUnits === "seconds") {
+            this.timeout = n.timeout * 1000;
+        } else if (n.timeoutUnits === "minutes") {
+            this.timeout = n.timeout * (60 * 1000);
+        } else if (n.timeoutUnits === "hours") {
+            this.timeout = n.timeout * (60 * 60 * 1000);
+        } else if (n.timeoutUnits === "days") {
+            this.timeout = n.timeout * (24 * 60 * 60 * 1000);
         }
         
-        var method = "GET";
-        
-        node.pollWotkitData = setInterval(function() {
-            HTTPGetRequest(url, node); 
-        },timeout);
-
+        var timeout = node.timeout;
+        if (timeout >= 5000){
+            var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
+            this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+            //TODO: if node is deleted, should stop interval, if interval value is modified , update that
+            var url;
+            if (this.login){
+                url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
+                var method = "GET";
+                node.pollWotkitData = setInterval(function() {
+                    HTTPGetRequest(url, node); 
+                },timeout);
+            }
+        }else{
+            node.error("Poll Interval must be equal to or greater than 5 seconds!");
+        }
     }
     RED.nodes.registerType("wotkit in",WotkitIn,{
     });
@@ -58,7 +71,6 @@ module.exports = function(RED) {
     WotkitIn.prototype.close = function(){
         if (this.pollWotkitData != null) {
             clearInterval(this.pollWotkitData);
-            this.log("poll: repeat stopped");
         }
     }
 
@@ -120,17 +132,22 @@ module.exports = function(RED) {
                     }else{
                         json.forEach(function(item, index){
                             if (node.lastId == null  || node.lastId < item.id){
-                                payload.push(item);
-                            }
-                            if (index === json.length-1){
-                                node.lastId = item.id;
+                                // payload.push(item);
+                                if (index === json.length-1){
+                                    node.lastId = item.id;
+                                }
+                                delete item.id;
+                                delete item["sensor_id"];
+                                delete item["sensor_name"];
+                                msg.payload = item;
+                                node.send(msg);
                             }
                         });
-                        if(payload.length > 0){
-                            node.log(JSON.stringify(payload));
-                            msg.payload = JSON.stringify(payload);
-                            node.send(msg);
-                        }
+                        // if(payload.length > 0){
+                        //     node.log(JSON.stringify(payload));
+                        //     msg.payload = JSON.stringify(payload);
+                        //     node.send(msg);
+                        // }
                         payload = [];
                     }
                     bodyChunks =[];
@@ -172,11 +189,12 @@ module.exports = function(RED) {
                 res.setEncoding('utf8');
                 msg.statusCode = res.statusCode;
                 msg.headers = res.headers;
-                msg.payload = "";
+                var result = "";
                 res.on('data',function(chunk) {
-                    msg.payload += chunk;
+                    result += chunk;
                 });
                 res.on('end',function() {
+                    msg.payload = JSON.stringify(result);
                     node.send(msg);
                     node.status({});
 
