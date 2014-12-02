@@ -11,11 +11,14 @@
         <label for="node-input-sensor"><i class="icon-tag"></i>WoTKit Sensor</label>
         <input type="text" id="node-input-sensor" placeholder="Sensor Name">
     </div>
-    <div class="form-row">
-        <label for="node-input-timeout"><i class="icon-tag"></i>Poll Interval</label>
-        <input type="text" id="node-input-timeout" placeholder="Interval in milliseconds">
+    <div id="poll-details" class="form-row">
+        <label for="node-input-timeout"><i class="fa fa-clock-o"></i> Poll Every</label>
+        <input type="text" id="node-input-timeout" placeholder="Time" style="direction:rtl; width:50px !important">
+        <select id="node-input-timeoutUnits" style="width:200px !important">
+          <option value="seconds">Seconds</option>
+          <option value="minutes">Minutes</option>
+        </select>
     </div>
-    <div id="node-input-tip" class="form-tips">The url will be relative to <code><span id="node-input-path"></span></code>.</div>
 </script>
 
 <script type="text/x-red" data-help-name="wotkit in">
@@ -88,8 +91,9 @@
         color:"rgb(231, 231, 174)",
         defaults: {
             name: {value:"WotKit In"},
+            timeout: {value:"5", required:true, validate:RED.validators.number()},
+            timeoutUnits: {value:"seconds",required:true},
             sensor: {value:"",required:true},
-            timeout: {value:"5000",required:true},
             login: {value:"", type:"wotkit-credentials"},
         },
         inputs:0,
@@ -127,7 +131,13 @@
                 $("#node-input-path").html(root);
                 $("#node-input-tip").show();
             }
-            //document.getElementById("node-config-wsdocpath").innerHTML=
+            $( "#node-input-timeout" ).spinner({min:1,max:60});
+            if (!this.timeoutUnits) {
+                $("#node-input-timeoutUnits option").filter(function() {
+                  return $(this).val() == 'seconds';
+                }).attr('selected', true);
+            }
+
         }
 
     });
@@ -138,7 +148,6 @@
         defaults: {
             name: {value:"WotKit Out"},
             sensor: {value:"",required:true},
-            timeout: {value:"5000",required:true},
             login: {value:"", type:"wotkit-credentials"},
         },
         inputs:1,

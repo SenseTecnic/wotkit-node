@@ -32,23 +32,32 @@ module.exports = function(RED) {
 
         RED.nodes.createNode(this,n);
         this.sensor = n.sensor;
-        this.timeout = n.timeout;
         this.lastId = null;
         var node = this;
         var sensor_name = node.sensor;
-        var timeout = node.timeout;
-        var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
-        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
-        //TODO: if node is deleted, should stop interval, if interval value is modified , update that
-        var url;
-        if (this.login){
-            url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
-            var method = "GET";
-            node.pollWotkitData = setInterval(function() {
-                HTTPGetRequest(url, node); 
-            },timeout);
-        }
 
+        if (n.timeoutUnits === "seconds") {
+            this.timeout = n.timeout * 1000;
+        } else if (n.timeoutUnits === "minutes") {
+            this.timeout = n.timeout * (60 * 1000);
+        }
+        
+        var timeout = node.timeout;
+        if (timeout >= 5000){
+            var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
+            this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+            //TODO: if node is deleted, should stop interval, if interval value is modified , update that
+            var url;
+            if (this.login){
+                url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
+                var method = "GET";
+                node.pollWotkitData = setInterval(function() {
+                    HTTPGetRequest(url, node); 
+                },timeout);
+            }
+        }else{
+            node.error("Poll Interval must be equal to or greater than 5 seconds!");
+        }
     }
     RED.nodes.registerType("wotkit in",WotkitIn,{
     });
@@ -128,11 +137,6 @@ module.exports = function(RED) {
                                 node.send(msg);
                             }
                         });
-                        // if(payload.length > 0){
-                        //     node.log(JSON.stringify(payload));
-                        //     msg.payload = JSON.stringify(payload);
-                        //     node.send(msg);
-                        // }
                         payload = [];
                     }
                     bodyChunks =[];
@@ -190,12 +194,6 @@ module.exports = function(RED) {
             }).on('error', function(e){
                 node.warn ("Got Error: "+e.message);
             });
-            // req.on('error',function(err) {
-            //     msg.payload = err.toString() + " : " + url;
-            //     msg.statusCode = err.code;
-            //     node.send(msg);
-            //     node.status({fill:"red",shape:"ring",text:err.code});
-            // });
             if (payload) {
                 req.write(payload);
             }
