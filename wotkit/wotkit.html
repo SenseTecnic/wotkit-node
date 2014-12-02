@@ -8,11 +8,11 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-sensor"><i class="icon-tag"></i>WoTKit Sensor</label>
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
         <input type="text" id="node-input-sensor" placeholder="Sensor Name">
     </div>
     <div id="poll-details" class="form-row">
-        <label for="node-input-timeout"><i class="fa fa-clock-o"></i> Poll Every</label>
+        <label for="node-input-timeout"><i class="fa fa-clock-o"></i> Poll For</label>
         <input type="text" id="node-input-timeout" placeholder="Time" style="direction:rtl; width:50px !important">
         <select id="node-input-timeoutUnits" style="width:200px !important">
           <option value="seconds">Seconds</option>
@@ -50,7 +50,7 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-sensor"><i class="icon-tag"></i>WoTKit Sensor</label>
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
         <input type="text" id="node-input-sensor" placeholder="Sensor Name">
     </div>
 </script>
@@ -90,7 +90,7 @@
         category: 'input',
         color:"rgb(231, 231, 174)",
         defaults: {
-            name: {value:"WotKit In"},
+            name: {value:""},
             timeout: {value:"5", required:true, validate:RED.validators.number()},
             timeoutUnits: {value:"seconds",required:true},
             sensor: {value:"",required:true},
@@ -102,19 +102,10 @@
         label: function() {
             if (this.name) {
                 return this.name;
-            } else if (this.url) {
-                var root = RED.settings.httpNodeRoot;
-                if (root.slice(-1) != "/") {
-                    root = root+"/";
-                }
-                if (this.url.charAt(0) == "/") {
-                    root += this.url.slice(1);
-                } else {
-                    root += this.url;
-                }
-                return "["+this.method+"] "+root;
+            } else if (this.sensor) {
+                return this.sensor;
             } else {
-                return "WotKit In";
+                return "wotkit";
             }
         },
         labelStyle: function() {
@@ -146,7 +137,7 @@
         category: 'output',
         color:"rgb(231, 231, 174)",
         defaults: {
-            name: {value:"WotKit Out"},
+            name: {value:""},
             sensor: {value:"",required:true},
             login: {value:"", type:"wotkit-credentials"},
         },
@@ -155,7 +146,13 @@
         align: "right",
         icon: "white-globe.png",
         label: function() {
-            return this.name||"WotKit Out";
+            if (this.name) {
+                return this.name;
+            } else if (this.sensor) {
+                return this.sensor;
+            } else {
+                return "wotkit";
+            }
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";

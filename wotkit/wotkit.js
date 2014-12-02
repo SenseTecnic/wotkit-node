@@ -194,6 +194,12 @@ module.exports = function(RED) {
             }).on('error', function(e){
                 node.warn ("Got Error: "+e.message);
             });
+            // req.on('error',function(err) {
+            //     msg.payload = err.toString() + " : " + url;
+            //     msg.statusCode = err.code;
+            //     node.send(msg);
+            //     node.status({fill:"red",shape:"ring",text:err.code});
+            // });
             if (payload) {
                 req.write(payload);
             }
