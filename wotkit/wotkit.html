@@ -1,6 +1,6 @@
 <script type="text/x-red" data-template-name="wotkit in">
     <div class="form-row">
-        <label for="node-input-twitter"><i class="fa fa-user"></i> Log in as</label>
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
     </div>
     <div class="form-row">
@@ -22,27 +22,26 @@
 </script>
 
 <script type="text/x-red" data-help-name="wotkit in">
-    <p>Provides an input node for WoTKit, allowing the creation of simple web services.</p>
-    <p>The resulting message has the following properties:
-        <ul>
-            <li>msg.payload : message payload</li>
-        </ul>
+
+    <p>Provides input from a WoTKit sensor allowing sensor data from the WoTKit to be used in your flows.</p>
+    
+    <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
     <p>
-       To use this node, correct WoTKit login credentials must be provided to receive sensor data. 
+       To use this node, WoTKit login credentials must be provided.  This can be either your WoTKit user name and password, or a key id and password associated with the account.
     </p>
     <p>
-       WotKit Sensor Name should be in the form of "{username}.{sensor name}"
+       The WotKit Sensor Name should be in the form of <code>{username}.{sensorname}</code> or the numeric sensor id.
     </p>
-    <p>
-       <b>Note: </b>The poll interval will determine how frequent the node retrieves sensor data
+    <p>The poll interval specifies how often the input node calls the WoTKit to retrieve new sensor data.</p>
+    <p><strong>Note</strong> that the first request will occur after the intial poll interval has elapsed.
     </p>
 
 </script>
 
 <script type="text/x-red" data-template-name="wotkit out">
     <div class="form-row">
-        <label for="node-input-twitter"><i class="fa fa-user"></i> Log in as</label>
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
     </div>
     <div class="form-row">
@@ -56,16 +55,14 @@
 </script>
 
 <script type="text/x-red" data-help-name="wotkit out">
-    <p>Sends responses back to WoTKit sensor received from an input node.</p>
-    <p>The response can be customised using the following message properties:</p>
-    <ul>
-        <li><code>payload</code> is consists of the sensor fields and values</li>
-    </ul>
-    <p>
-       To use this node, correct WoTKit login credentials must be provided to receive sensor data. 
+    <p>Provides output to a registered WoTKit sensor.</p>
+    <p>The <code>message.payload</code> must contain a map of sensor field names to sensor values that match the required fields in the sensor schema as configured in the WoTKit.
     </p>
     <p>
-       WotKit Sensor Name should be in the form of "{username}.{sensor name}"
+       To use this node, WoTKit login credentials must be provided.  This can be either the user name and password, or a key id and password associated with the account.
+    </p>
+    <p>
+       The WotKit Sensor Name should be in the form of <code>{username}.{sensorname}</code> or using the numeric sensor id.
     </p>
 </script>
 
