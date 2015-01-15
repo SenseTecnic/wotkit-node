@@ -72,6 +72,10 @@
         <input class="input-append-left" type="text" id="node-config-input-nickname" placeholder="Nickname" >
     </div>
     <div class="form-row">
+        <label for="node-config-input-url"><i class="fa fa-user"></i> WoTKit URL</label>
+        <input type="text" id="node-config-input-url">
+    </div>
+    <div class="form-row">
         <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
         <input type="text" id="node-config-input-user">
     </div>
@@ -165,7 +169,8 @@
         },
         credentials: {
             user: {type: "text"},
-            password: {type:"password"}
+            password: {type:"password"},
+            url: {type:"text"}
         },
             
         label: function() {

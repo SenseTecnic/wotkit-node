@@ -49,7 +49,7 @@ module.exports = function(RED) {
             //TODO: if node is deleted, should stop interval, if interval value is modified , update that
             var url;
             if (this.login){
-                url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data?before="+query_timeout;
+                url = "/api/sensors/"+sensor_name+"/data?before="+query_timeout;
                 var method = "GET";
                 node.pollWotkitData = setInterval(function() {
                     HTTPGetRequest(url, node); 
@@ -79,7 +79,7 @@ module.exports = function(RED) {
             //post upstream msg to wotkit
             var sensor_name = node.sensor;
 
-            var url = "http://wotkit.sensetecnic.com/api/sensors/"+sensor_name+"/data";
+            var url = "/api/sensors/"+sensor_name+"/data";
             var method = "POST";
             makeHTTPRequest(url, method, node, msg);
         });
@@ -93,15 +93,18 @@ module.exports = function(RED) {
         this.name = n.name;
         this.user = n.user;
         this.password = n.password;
+        this.url = n.url;
     }
     RED.nodes.registerType("wotkit-credentials", WotkitCredentialsNode, {
         credentials: {
             user: {type:"text"},
-            password: {type: "password"}
+            password: {type: "password"},
+            url: {type: "text"}
         }
     });
 
     function HTTPGetRequest(url, node){
+        url = node.login.credentials.url+url;
         var opts = urllib.parse(url);
             opts.method = "GET";
             
@@ -146,6 +149,7 @@ module.exports = function(RED) {
     }
 
     function makeHTTPRequest(url, method, node, msg){
+        url = node.login.credentials.url+url;
         var opts = urllib.parse(url);
             opts.method = method;
             opts.headers = {};
