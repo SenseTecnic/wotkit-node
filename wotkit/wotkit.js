@@ -27,38 +27,34 @@ module.exports = function(RED) {
         });
     }
 
-
     function WotkitIn(n) {
 
         RED.nodes.createNode(this,n);
+        var node = this;
+
+        if (!n.sensor) {
+            node.error("No sensor specified");
+            return;
+        }
+
+        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+        if (!this.login) {
+            node.error("No credentials specified");
+            return;
+        }
+
         this.sensor = n.sensor;
         this.lastId = null;
-        var node = this;
-        var sensor_name = node.sensor;
+        this.url = this.login.credentials.url || "http://wotkit.sensetecnic.com";
+        this.timeout = (n.timeout || 5) * (n.timeoutUnits === "minutes" ? 60000:1000);
+        this.querytimeout = this.timeout + 1000;
 
-        if (n.timeoutUnits === "seconds") {
-            this.timeout = n.timeout * 1000;
-        } else if (n.timeoutUnits === "minutes") {
-            this.timeout = n.timeout * (60 * 1000);
-        }
-        
-        var timeout = node.timeout;
-        if (timeout >= 5000){
-            var query_timeout = parseInt(timeout)+1000; //query for extra second, then filter out by id and timestamp
-            this.login = RED.nodes.getNode(n.login);// Retrieve the config node
-            //TODO: if node is deleted, should stop interval, if interval value is modified , update that
-            var url;
-            if (this.login){
-                url = "/api/sensors/"+sensor_name+"/data?before="+query_timeout;
-                var method = "GET";
-                node.pollWotkitData = setInterval(function() {
-                    HTTPGetRequest(url, node); 
-                },timeout);
-            }
-        }else{
-            node.error("Poll Interval must be equal to or greater than 5 seconds!");
-        }
+        var url = this.url+"/api/sensors/"+node.sensor+"/data?before="+node.querytimeout;
+        node.pollWotkitData = setInterval(function() {
+            HTTPGetRequest(url, node);
+        },this.timeout);
     }
+
     RED.nodes.registerType("wotkit in",WotkitIn,{
     });
 
@@ -67,7 +63,6 @@ module.exports = function(RED) {
             clearInterval(this.pollWotkitData);
         }
     }
-
 
     function WotkitOut(n) {
         RED.nodes.createNode(this,n);
@@ -104,110 +99,103 @@ module.exports = function(RED) {
     });
 
     function HTTPGetRequest(url, node){
-        url = node.login.credentials.url+url;
         var opts = urllib.parse(url);
-            opts.method = "GET";
+        opts.method = "GET";
             
-            if (node.login.credentials && node.login.credentials.user) {
-                opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
-            }
+        if (node.login.credentials && node.login.credentials.user) {
+            opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
+        }
 
-            var req = ((/^https/.test(url))?https:http).get(opts, function(res){
-                var bodyChunks = [];
-                res.on('data', function(chunk) {
-                    // You can process streamed parts here...
-                    bodyChunks.push(chunk);
-                }).on('end', function() {
-                    var msg = {};
-                    var chunk=Buffer.concat(bodyChunks);
-                    var message = chunk.toString('utf8');
-                    var payload = [];
-                    var json = JSON.parse(chunk.toString('utf8'));
-                    if (res.statusCode !=200){
-                        node.error ("Node "+node.name + ": "+message);
-                        clearInterval(node.pollWotkitData);
-                    }else{
-                        json.forEach(function(item, index){
-                            if (node.lastId == null  || node.lastId < item.id){
-                                // payload.push(item);
-                                if (index === json.length-1){
-                                    node.lastId = item.id;
-                                }
-                                delete item.id;
-                                delete item["sensor_id"];
-                                delete item["sensor_name"];
-                                msg.payload = item;
-                                node.send(msg);
+        var req = ((/^https/.test(url))?https:http).get(opts, function(res){
+            var bodyChunks = [];
+            res.on('data', function(chunk) {
+                // You can process streamed parts here...
+                bodyChunks.push(chunk);
+            }).on('end', function() {
+                var msg = {};
+                var chunk=Buffer.concat(bodyChunks);
+                var message = chunk.toString('utf8');
+                var payload = [];
+                var json = JSON.parse(chunk.toString('utf8'));
+                if (res.statusCode !=200){
+                    node.error ("Node "+node.name + ": "+message);
+                    clearInterval(node.pollWotkitData);
+                }else{
+                    json.forEach(function(item, index){
+                        if (node.lastId == null  || node.lastId < item.id){
+                            // payload.push(item);
+                            if (index === json.length-1){
+                                node.lastId = item.id;
                             }
-                        });
-                        payload = [];
-                    }
-                    bodyChunks =[];
+                            delete item.id;
+                            delete item["sensor_id"];
+                            delete item["sensor_name"];
+                            msg.payload = item;
+                            node.send(msg);
+                        }
+                    });
+                    payload = [];
+                }
+                bodyChunks =[];
                     
-                })
-            });
+            })
+        });
     }
 
-    function makeHTTPRequest(url, method, node, msg){
+    function makeHTTPRequest(url, method, node, msg) {
         url = node.login.credentials.url+url;
         var opts = urllib.parse(url);
-            opts.method = method;
-            opts.headers = {};
-            if (msg.headers) {
-                for (var v in msg.headers) {
-                    if (msg.headers.hasOwnProperty(v)) {
-                        var name = v.toLowerCase();
-                        if (name !== "content-type" && name !== "content-length") {
-                            // only normalise the known headers used later in this
-                            // function. Otherwise leave them alone.
-                            name = v;
-                        }
-                        opts.headers[name] = msg.headers[v];
+        opts.method = method;
+        opts.headers = {};
+        if (msg.headers) {
+            for (var v in msg.headers) {
+                if (msg.headers.hasOwnProperty(v)) {
+                    var name = v.toLowerCase();
+                    if (name !== "content-type" && name !== "content-length") {
+                        // only normalise the known headers used later in this
+                        // function. Otherwise leave them alone.
+                        name = v;
                     }
+                    opts.headers[name] = msg.headers[v];
                 }
             }
-            if (node.login.credentials && node.login.credentials.user) {
-                opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
+        }
+        if (node.login.credentials && node.login.credentials.user) {
+            opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
+        }
+        var payload = null;
+    
+        if (msg.payload && (method == "POST" || method == "PUT") ) {
+            payload = JSON.stringify(msg.payload);
+            if (opts.headers['content-type'] == null) {
+                opts.headers['content-type'] = "application/json";
             }
-            var payload = null;
-        
-            if (msg.payload && (method == "POST" || method == "PUT") ) {
-                payload = JSON.stringify(msg.payload);
-                if (opts.headers['content-type'] == null) {
-                            opts.headers['content-type'] = "application/json";
-                }
-            }
+        }
 
-            var req = ((/^https/.test(url))?https:http).request(opts,function(res) {
-                res.setEncoding('utf8');
-                msg.statusCode = res.statusCode;
-                msg.headers = res.headers;
-                var result = "";
-                res.on('data',function(chunk) {
-                    result += chunk;
-                });
-                res.on('end',function() {
-                    msg.payload = JSON.stringify(result);
-                    node.send(msg);
-                    node.status({});
-
-                    if (res.statusCode !=201){
-                        node.error ("Node "+node.name + ": "+msg.payload);
-                    }
-                });
-            }).on('error', function(e){
-                node.warn ("Got Error: "+e.message);
+        var req = ((/^https/.test(url))?https:http).request(opts,function(res) {
+            res.setEncoding('utf8');
+            msg.statusCode = res.statusCode;
+            msg.headers = res.headers;
+            var result = "";
+            res.on('data',function(chunk) {
+                result += chunk;
             });
-            // req.on('error',function(err) {
-            //     msg.payload = err.toString() + " : " + url;
-            //     msg.statusCode = err.code;
-            //     node.send(msg);
-            //     node.status({fill:"red",shape:"ring",text:err.code});
-            // });
-            if (payload) {
-                req.write(payload);
-            }
-            req.end();
+            res.on('end',function() {
+                msg.payload = JSON.stringify(result);
+                node.send(msg);
+                node.status({});
 
+                if (res.statusCode !=201){
+                    node.error ("Node "+node.name + ": "+msg.payload);
+                }
+            });
+        }).on('error', function(e){
+            node.warn ("Got Error: "+e.message);
+        });
+
+        if (payload) {
+            req.write(payload);
+        }
+        req.end();
     }
 };

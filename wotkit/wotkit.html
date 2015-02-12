@@ -1,3 +1,4 @@
+
 <script type="text/x-red" data-template-name="wotkit in">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
@@ -72,8 +73,8 @@
         <input class="input-append-left" type="text" id="node-config-input-nickname" placeholder="Nickname" >
     </div>
     <div class="form-row">
-        <label for="node-config-input-url"><i class="fa fa-user"></i> WoTKit URL</label>
-        <input type="text" id="node-config-input-url">
+        <label for="node-config-input-url"><i class="fa fa-user"></i> WoTKit url</label>
+        <input type="text" id="node-config-input-url" placeholder="http://wotkit.sensetecnic.com">
     </div>
     <div class="form-row">
         <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
@@ -94,8 +95,8 @@
             name: {value:""},
             timeout: {value:"5", required:true, validate:RED.validators.number()},
             timeoutUnits: {value:"seconds",required:true},
-            sensor: {value:"",required:true},
-            login: {value:"", type:"wotkit-credentials"},
+            sensor: {required:true},
+            login: {type:"wotkit-credentials"},
         },
         inputs:0,
         outputs:1,
@@ -168,9 +169,9 @@
             nickname: {value:"Default"}
         },
         credentials: {
-            user: {type: "text"},
-            password: {type:"password"},
-            url: {type:"text"}
+            user: {type: "text", required:true},
+            password: {type:"password", required:true},
+            url: {type:"text", value:"wotkit.sensetecnic.com", required:true}
         },
             
         label: function() {
