@@ -24,18 +24,19 @@
 
 <script type="text/x-red" data-help-name="wotkit in">
 
-    <p>Provides input from a WoTKit sensor allowing sensor data from the WoTKit to be used in your flows.</p>
+    <p>Provides input from a WoTKit sensor allowing <em>new</em> data sent to a sensor to be used in your flows.</p>
+    <p>This node does not currently retrieve data from the past, or previous sensor readings, only new data sent to a WoTKit sensor after this node is deployed.</p>
     
     <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
     <p>
-       To use this node, WoTKit login credentials must be provided.  This can be either your WoTKit user name and password, or a key id and password associated with the account.
+       To use this node, the WoTKit URL (default is the <a href="http://wotkit.sensetecnic.com">WoTKit sandbox</a>) and login credentials must be provided.  Credentials can be either your WoTKit user name and password, or a key id and password associated with your account.
     </p>
     <p>
-       The WotKit Sensor Name should be in the form of <code>{username}.{sensorname}</code> or the numeric sensor id.
+       The sensor name should be in the form <code>{username}.{sensorname}</code> or you can use the numeric sensor id.
     </p>
-    <p>The poll interval specifies how often the input node calls the WoTKit to retrieve new sensor data.</p>
-    <p><strong>Note</strong> that the first request will occur after the intial poll interval has elapsed.
+    <p>The poll interval specifies how often this node calls the WoTKit to retrieve new sensor data.  </p>
+    <p><strong>Note:</strong>  the first request will occur after the intial poll interval has elapsed, starting with data sent to the sensor after the node was deployed.
     </p>
 
 </script>
