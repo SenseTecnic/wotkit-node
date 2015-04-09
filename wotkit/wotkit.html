@@ -58,13 +58,21 @@
 
 <script type="text/x-red" data-help-name="wotkit out">
     <p>Provides output to a registered WoTKit sensor.</p>
-    <p>The <code>message.payload</code> must contain an Object of sensor field names to sensor values that match the required fields in the sensor schema as configured in the WoTKit. For example a sensor with the default fields expects:</p>
+
+    <p>The <code>message.payload</code> must contain an Object of key-value pairs matching the sensor fields. For example a sensor with the default fields expects:</p>
     <pre>msg.payload = {
 	value:1028,
 	lat:123.60,
 	lng:49.23,
 	message:"Memory Update"
 }</pre>
+
+    <p>If receiving a number from another node, for example <code>message.payload = 123456</code> the sensor's <code>value</code> field will be updated using the following object:</p>
+    <pre>msg.payload = { value:  123456}</pre>
+
+    <p>If receiving a string from another node, for example <code>message.payload = "Hello World"</code> the sensor's <code>message</code> field will be updated using the following object:</p>
+    <pre>msg.payload = { message:  "Hello World"}</pre>
+
     <p>To use this node, WoTKit login credentials must be provided.  This can be either the user name and password, or a key id and password associated with the account.</p>
     <p>
        The WotKit Sensor Name should be in the form of <code>{username}.{sensorname}</code> or using the numeric sensor id.
