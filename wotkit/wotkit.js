@@ -183,11 +183,10 @@ module.exports = function(RED) {
      * Utility functions for Http Requests
      */
 
-    /* Parse JSON as parameters and encode to append to URL
-     * Accept only string and number parameters, nested objects will be ignored
-     */
+    /* Parse JSON as parameters and encode to append to URL*/     
     function getUrlParamters(data) {
         var params = Object.keys(data).map(function(k) {
+                     //Only string and number parameters, nested objects will be ignored
                      if (typeof data[k] === 'string') { 
                          return encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
                      } else if (typeof data[k] ==='number') {
