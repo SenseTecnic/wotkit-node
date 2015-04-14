@@ -1,5 +1,5 @@
-
-<script type="text/x-red" data-template-name="wotkit in">
+<!-- Node for WoTKit Sensor Input -->
+<script type="text/x-red" data-template-name="wotkit data-in">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
@@ -22,7 +22,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="wotkit in">
+<script type="text/x-red" data-help-name="wotkit data-in">
 
     <p>Provides input from a WoTKit sensor allowing <em>new</em> data sent to a sensor to be used in your flows.</p>
     <p>This node does not currently retrieve data from the past, or previous sensor readings, only new data sent to a WoTKit sensor after this node is deployed.</p>
@@ -41,7 +41,9 @@
 
 </script>
 
-<script type="text/x-red" data-template-name="wotkit out">
+<!-- Node for WoTKit Sensor Output -->
+
+<script type="text/x-red" data-template-name="wotkit data-out">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
@@ -56,7 +58,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="wotkit out">
+<script type="text/x-red" data-help-name="wotkit data-out">
     <p>Provides output to a registered WoTKit sensor.</p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pairs matching the sensor fields. For example a sensor with the default fields expects:</p>
@@ -79,6 +81,53 @@
     </p>
 </script>
 
+
+
+<!-- Node for WoTKit Control Output -->
+
+<script type="text/x-red" data-template-name="wotkit control-out">
+    <div class="form-row">
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+        <input type="text" id="node-input-login">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
+        <input type="text" id="node-input-sensor" placeholder="Sensor Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="wotkit control-out">
+    <p>Provides control output to a registered WoTKit sensor.</p>
+
+    <p>The <code>message.payload</code> must contain an Object of key-value pair for each message. For example, to send a control <code>button: on</code> message:</p>
+    <pre>msg.payload = {
+	"button":"on"
+}</pre>
+
+    <p>If receiving a number from another node, for example <code>message.payload = 123456</code> the following message will be sent:</p>
+    <pre>msg.payload = { "slider":  "123456"}</pre>
+
+    <p>If receiving a string from another node, for example <code>message.payload = "Hello World"</code> the following message will be sent:</p>
+    <pre>msg.payload = { "message":  "Hello World"}</pre>
+
+    <p>To use this node, WoTKit login credentials must be provided.  This can be either the user name and password, or a key id and password associated with the account.</p>
+    <p>
+       The WotKit Sensor Name should be in the form of <code>{username}.{sensorname}</code> or using the numeric sensor id.
+    </p>
+
+
+</script>
+
+
+<!-- TODO: Node for WoTKit Control Input -->
+
+
+<!-- Node for WoTKit Credentials -->
+
 <script type="text/x-red" data-template-name="wotkit-credentials">
     <div class="form-row node-input-broker">
         <label for="node-config-input-nickname"><i class="fa fa-globe"></i> Config Name</label>
@@ -100,7 +149,12 @@
 
 
 <script type="text/javascript">
-    RED.nodes.registerType('wotkit in',{
+
+    /*
+     * Node for WoTKit Sensor Input
+     */
+
+    RED.nodes.registerType('wotkit data-in',{
         category: 'input',
         color:"rgb(231, 231, 174)",
         defaults: {
@@ -119,7 +173,7 @@
             } else if (this.sensor) {
                 return this.sensor;
             } else {
-                return "wotkit";
+                return "wotkit data";
             }
         },
         labelStyle: function() {
@@ -147,7 +201,12 @@
 
     });
 
-    RED.nodes.registerType('wotkit out',{
+
+    /*
+     * Node for WoTKit Sensor Output
+     */
+
+    RED.nodes.registerType('wotkit data-out',{
         category: 'output',
         color:"rgb(231, 231, 174)",
         defaults: {
@@ -165,7 +224,7 @@
             } else if (this.sensor) {
                 return this.sensor;
             } else {
-                return "wotkit";
+                return "wotkit data";
             }
         },
         labelStyle: function() {
@@ -174,7 +233,46 @@
         oneditprepare: function() {
         },
     });
+
+
+    /*
+     * Node for WoTKit Sensor Control Output
+     */
+
+    RED.nodes.registerType('wotkit control-out',{
+        category: 'output',
+        color:"rgb(231, 231, 174)",
+        defaults: {
+            name: {value:""},
+            sensor: {value:"",required:true},
+            login: {value:"", type:"wotkit-credentials"},
+        },
+        inputs:1,
+        outputs:0,
+        align: "right",
+        icon: "white-globe.png",
+        label: function() {
+            if (this.name) {
+                return this.name;
+            } else if (this.sensor) {
+                return this.sensor;
+            } else {
+                return "wotkit control";
+            }
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+        },
+    });
+
     
+
+    /*
+     * Node for WoTKit Sensor Credentials
+     */
+
     RED.nodes.registerType('wotkit-credentials',{
         category: 'config',
         defaults: {

@@ -27,7 +27,10 @@ module.exports = function(RED) {
         });
     }
 
-    function WotkitIn(n) {
+    /*
+     * Node for WoTKit Sensor Input
+     */
+    function WotkitDataIn(n) {
 
         RED.nodes.createNode(this,n);
         var node = this;
@@ -56,15 +59,18 @@ module.exports = function(RED) {
         },this.timeout);
     }
 
-    RED.nodes.registerType("wotkit in",WotkitIn);
+    RED.nodes.registerType("wotkit data-in",WotkitDataIn);
 
-    WotkitIn.prototype.close = function(){
+    WotkitDataIn.prototype.close = function(){
         if (this.pollWotkitData != null) {
             clearInterval(this.pollWotkitData);
         }
     }
 
-    function WotkitOut(n) {
+    /*
+     * Node for WoTKit Sensor Output
+     */
+    function WotkitDataOut(n) {
         RED.nodes.createNode(this,n);
         var node = this;
 
@@ -82,7 +88,7 @@ module.exports = function(RED) {
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.on("input",function(msg) {
 
-            //Accepted formats: Formated Object. 
+            // Accepted formats: Formated Object. 
             // String, number: will create a {value:msg.payload} object.
             // Json string "{}" will be made an object
             if (typeof msg.payload === "number"){
@@ -102,8 +108,61 @@ module.exports = function(RED) {
             makeHTTPRequest(url, method, node, msg);
         });
     }
-    RED.nodes.registerType("wotkit out",WotkitOut);
+    RED.nodes.registerType("wotkit data-out",WotkitDataOut);
 
+
+    /*
+     * Node for WoTKit Control Output
+     */
+
+    function WotkitControlOut(n) {
+        RED.nodes.createNode(this,n);
+        var node = this;
+
+        if (!n.sensor) {
+            node.error("No sensor specified");
+            return;
+        }
+
+        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+        if (!this.login) {
+            node.error("No credentials specified");
+            return;
+        }
+        this.sensor = n.sensor;
+        this.url = this.login.url || "http://wotkit.sensetecnic.com";
+        this.on("input",function(msg) {
+
+            // Accepted formats: Formated Object. 
+            // String, number: will create a {slider:msg.payload} object.
+            // Json string "{}" will be made an object
+            // NOTE: This is to support JSON posting in the near future.
+            if (typeof msg.payload === "number"){
+                msg.payload = {slider: msg.payload};
+            } else if (typeof msg.payload === "string"){
+                try { //if in JSON format
+                    msg.payload = JSON.parse(msg.payload);
+                } catch (e) {
+                    msg.payload = {message: msg.payload};
+                }
+            } //else if object carry on.
+
+            var urlparams = getUrlParamters(msg.payload);
+            msg.payload = null; //in the future we can use this to POST a JSON Object
+
+            //post upstream message to wotkit, currently form-urlencoded
+            var headers = {'content-type': 'application/x-www-form-urlencoded'};
+            var url = node.url+"/api/sensors/"+node.sensor+"/message?"+urlparams;
+            var method = "POST";
+            makeHTTPRequest(url, method, node, msg, headers);
+        });
+    }
+    RED.nodes.registerType("wotkit control-out",WotkitControlOut);
+
+
+    /*
+     * Node for WoTKit Credentials
+     */
     function WotkitCredentialsNode(n) {
         RED.nodes.createNode(this,n);
         this.url = n.url;
@@ -112,12 +171,32 @@ module.exports = function(RED) {
             this.password = this.credentials.password; 
         }
     }
+
     RED.nodes.registerType("wotkit-credentials", WotkitCredentialsNode, {
         credentials: {
             user: {type:"text"},
             password: {type: "password"}
         }
     });
+
+    /*
+     * Utility functions for Http Requests
+     */
+
+    /* Parse JSON as parameters and encode to append to URL
+     * Accept only string and number parameters, nested objects will be ignored
+     */
+    function getUrlParamters(data) {
+        var params = Object.keys(data).map(function(k) {
+                     if (typeof data[k] === 'string') { 
+                         return encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
+                     } else if (typeof data[k] ==='number') {
+                         return encodeURIComponent(k) + '=' + data[k]
+                     }
+                    }).join('&');
+        return params;
+    }
+
 
     function HTTPGetRequest(url, node){
         var opts = urllib.parse(url);
@@ -163,10 +242,10 @@ module.exports = function(RED) {
         });
     }
 
-    function makeHTTPRequest(url, method, node, msg) {
+    function makeHTTPRequest(url, method, node, msg, headers) {
         var opts = urllib.parse(url);
-        opts.method = method;
-        opts.headers = {};
+        opts.method = method;        
+        opts.headers = headers || {};
         if (msg.headers) {
             for (var v in msg.headers) {
                 if (msg.headers.hasOwnProperty(v)) {
@@ -205,7 +284,7 @@ module.exports = function(RED) {
                 node.send(msg);
                 node.status({});
 
-                if (res.statusCode !=201){
+                if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
                 }
             });
