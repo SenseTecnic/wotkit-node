@@ -193,6 +193,7 @@ module.exports = function(RED) {
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.querytimeout = n.timeout; //already in seconds.
         this.active = true;
+        this.name = n.name;
 
         //register listener
         var url = node.url+"/api/v1/control/sub/"+node.sensor;
@@ -202,12 +203,11 @@ module.exports = function(RED) {
 
         node.pollWotkitEvents = function pullControl() {    
                                  //pull when we have the subscription
-                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
+                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout; //TODO: remove 1
                                  var method = "GET";
                                  var msg = {};
                                  doHTTPRequest(url, method, node, msg, function() { node.pollWotkitEvents() });    
                                };
-
 
         doHTTPRequest(url, method, node, msg, function(msg){
                              var data = JSON.parse(msg.data);
@@ -249,7 +249,11 @@ module.exports = function(RED) {
      * Utility functions for Http Requests
      */
 
-    /* Parse JSON as parameters and encode to append to URL*/     
+    /** 
+      * Parse JSON as parameters and encode to append to URL
+      * @param	data	Required: Data to parse
+      * @return		A String of parameters (key=value&key=value)
+     **/     
     function getUrlParamters(data) {
         var params = Object.keys(data).map(function(k) {
                      //Only string and number parameters, nested objects will be ignored
@@ -322,6 +326,7 @@ module.exports = function(RED) {
                     
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
+                    node.active = false;
                 } else  if (opts.method === 'GET') { //TODO: this only needs to be done if a get
                     var json = JSON.parse(result) || {};
 
@@ -341,7 +346,7 @@ module.exports = function(RED) {
                         }
                     });
                 } else { node.send (msg); }
-                if (callback && node.active) { //only call if node has not been closed
+                if (callback && node.active) { //only if node is not closed or no error
                     callback(msg);
                 }
 
