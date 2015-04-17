@@ -70,13 +70,7 @@ module.exports = function(RED) {
     }
 
     RED.nodes.registerType("wotkit data-in",WotkitDataIn);
-/*
-    WotkitDataIn.prototype.close = function(){
-        if (this.pollWotkitData != null) {
-            clearInterval(this.pollWotkitData);
-        }
-    } 
-*/
+  
     /*
      * Node for WoTKit Sensor Output
      */
