@@ -323,7 +323,6 @@ module.exports = function(RED) {
                     var json = JSON.parse(result) || {};
 
                     json.forEach(function(item, index){
-
                         if (node.lastId == null  || node.lastId < item.id){
                             if (index === json.length-1){
                                 node.lastId = item.id;
