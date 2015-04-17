@@ -53,20 +53,30 @@ module.exports = function(RED) {
 
         this.lastId = null;
 
+        var method = "GET";
+        var msg = {};
+
+
         var url = this.url+"/api/sensors/"+node.sensor+"/data?before="+node.querytimeout;
         node.pollWotkitData = setInterval(function() {
-            HTTPGetRequest(url, node);
+            doHTTPRequest(url, method, node, msg);
         },this.timeout);
+
+        this.on('close', function(){
+            if (this.pollWotkitData != null) {
+                clearInterval(this.pollWotkitData);
+            }
+        });
     }
 
     RED.nodes.registerType("wotkit data-in",WotkitDataIn);
-
+/*
     WotkitDataIn.prototype.close = function(){
         if (this.pollWotkitData != null) {
             clearInterval(this.pollWotkitData);
         }
-    }
-
+    } 
+*/
     /*
      * Node for WoTKit Sensor Output
      */
@@ -105,7 +115,7 @@ module.exports = function(RED) {
             //post upstream msg to wotkit
             var url = node.url+"/api/sensors/"+node.sensor+"/data";
             var method = "POST";
-            makeHTTPRequest(url, method, node, msg);
+            doHTTPRequest(url, method, node, msg);
         });
     }
     RED.nodes.registerType("wotkit data-out",WotkitDataOut);
@@ -149,16 +159,72 @@ module.exports = function(RED) {
 
             var urlparams = getUrlParamters(msg.payload);
             msg.payload = null; //in the future we can use this to POST a JSON Object
+            msg.headers = {'content-type': 'application/x-www-form-urlencoded'};
 
             //post upstream message to wotkit, currently form-urlencoded
-            var headers = {'content-type': 'application/x-www-form-urlencoded'};
             var url = node.url+"/api/sensors/"+node.sensor+"/message?"+urlparams;
             var method = "POST";
-            makeHTTPRequest(url, method, node, msg, headers);
+            doHTTPRequest(url, method, node, msg);
         });
     }
     RED.nodes.registerType("wotkit control-out",WotkitControlOut);
 
+
+     /*
+     * Node for WoTKit Control Sensor Input
+     */
+    function WotkitControlIn(n) {
+
+        RED.nodes.createNode(this,n);
+        var node = this;
+
+        if (!n.sensor) {
+            node.error("No sensor specified");
+            return;
+        }
+
+        this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+        if (!this.login) {
+            node.error("No credentials specified");
+            return;
+        }
+
+        this.sensor = n.sensor;
+        this.url = this.login.url || "http://wotkit.sensetecnic.com";
+        this.querytimeout = n.timeout; //already in seconds.
+        this.active = true;
+
+        //register listener
+        var url = node.url+"/api/v1/control/sub/"+node.sensor;
+        var method = "POST";
+        var msg = {'headers' : {'content-type': 'application/json'}};
+        var subscription = null;
+
+        node.pollWotkitEvents = function pullControl() {    
+                                 //pull when we have the subscription
+                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
+                                 var method = "GET";
+                                 var msg = {};
+                                 doHTTPRequest(url, method, node, msg, function() { node.pollWotkitEvents() });    
+                               };
+
+
+        doHTTPRequest(url, method, node, msg, function(msg){
+                             var data = JSON.parse(msg.data);
+                             subscription = data.subscription;
+                             node.active = true; //activate recursive pull
+                             node.pollWotkitEvents();
+                });     
+
+
+
+        this.on('close', function(){
+            this.active = false; //deactivate recursive pull
+        });
+
+    }
+
+    RED.nodes.registerType("wotkit control-in",WotkitControlIn);
 
     /*
      * Node for WoTKit Credentials
@@ -196,55 +262,22 @@ module.exports = function(RED) {
         return params;
     }
 
+    /**
+    *  Makes a call to the WoTKit API
+    *  @param	url		Required: The complete URL 
+    *  @param	method		Required: The HTTP Method of this request
+    *  @param	node 		Required: The node object. Used for credentials, name and debug messages
+    *  @param	msg 		msg.payload (data to be sent), msg.headers (any headers)
+    *  @param	callback 	If given this function will be called on success.
+    *  @return		        The msg object with the response from the server.
+    **/
+    function doHTTPRequest (url, method, node, msg, callback) {
 
-    function HTTPGetRequest(url, node){
-        var opts = urllib.parse(url);
-        opts.method = "GET";
-            
-        if (node.login.credentials && node.login.credentials.user) {
-            opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
-        }
-
-        var req = ((/^https/.test(url))?https:http).get(opts, function(res){
-            var bodyChunks = [];
-            res.on('data', function(chunk) {
-                // You can process streamed parts here...
-                bodyChunks.push(chunk);
-            }).on('end', function() {
-                var msg = {};
-                var chunk=Buffer.concat(bodyChunks);
-                var message = chunk.toString('utf8');
-                var payload = [];
-                var json = JSON.parse(chunk.toString('utf8'));
-                if (res.statusCode !=200){
-                    node.error ("Node "+node.name + ": "+message);
-                    clearInterval(node.pollWotkitData);
-                }else{
-                    json.forEach(function(item, index){
-                        if (node.lastId == null  || node.lastId < item.id){
-                            // payload.push(item);
-                            if (index === json.length-1){
-                                node.lastId = item.id;
-                            }
-                            delete item.id;
-                            delete item["sensor_id"];
-                            delete item["sensor_name"];
-                            msg.payload = item;
-                            node.send(msg);
-                        }
-                    });
-                    payload = [];
-                }
-                bodyChunks =[];
-                    
-            })
-        });
-    }
-
-    function makeHTTPRequest(url, method, node, msg, headers) {
         var opts = urllib.parse(url);
         opts.method = method;        
-        opts.headers = headers || {};
+        opts.headers = msg.headers || {};
+
+        /*Normalize headers*/
         if (msg.headers) {
             for (var v in msg.headers) {
                 if (msg.headers.hasOwnProperty(v)) {
@@ -257,10 +290,12 @@ module.exports = function(RED) {
                     opts.headers[name] = msg.headers[v];
                 }
             }
-        }
+        } 
+
         if (node.login.credentials && node.login.credentials.user) {
             opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
         }
+
         var payload = null;
     
         if (msg.payload && (method == "POST" || method == "PUT") ) {
@@ -271,29 +306,57 @@ module.exports = function(RED) {
         }
 
         var req = ((/^https/.test(url))?https:http).request(opts,function(res) {
+                
+            var result = "";
             res.setEncoding('utf8');
             msg.statusCode = res.statusCode;
             msg.headers = res.headers;
-            var result = "";
+                
             res.on('data',function(chunk) {
                 result += chunk;
             });
             res.on('end',function() {
                 msg.payload = JSON.stringify(result);
-                node.send(msg);
+                msg.data = result; 
                 node.status({});
-
+                    
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
+                } else  if (opts.method === 'GET') { //TODO: this only needs to be done if a get
+                    var json = JSON.parse(result) || {};
+
+                    json.forEach(function(item, index){
+
+                        if (node.lastId == null  || node.lastId < item.id){
+                            // payload.push(item);
+                            if (index === json.length-1){
+                                node.lastId = item.id;
+                            }
+                            //Clear sensor data.
+                            delete item.id;
+                            delete item["sensor_id"];
+                            delete item["sensor_name"];
+                            msg.payload = item;
+                            node.send(msg);
+                        }
+                    });
+                } else { node.send (msg); }
+                if (callback && node.active) { //only call if node has not been closed
+                    callback(msg);
                 }
+
             });
-        }).on('error', function(e){
-            node.warn ("Got Error: "+e.message);
-        });
+            }).on('error', function(e){
+                node.warn ("Got Error: "+e.message);
+            });
 
         if (payload) {
             req.write(payload);
         }
         req.end();
+        
+        return msg;
+
     }
+
 };

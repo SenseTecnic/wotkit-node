@@ -125,6 +125,37 @@
 
 <!-- TODO: Node for WoTKit Control Input -->
 
+<script type="text/x-red" data-template-name="wotkit control-in">
+    <div class="form-row">
+        <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
+        <input type="text" id="node-input-login">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-sensor"><i class="icon-tag"></i>Sensor</label>
+        <input type="text" id="node-input-sensor" placeholder="Sensor Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="wotkit control-in">
+
+    <p>Provides input from a WoTKit sensor control.</p>
+    
+    <p>The <code>message.payload</code> contains an object containing messages sent</p>
+    <p>
+       To use this node, the WoTKit URL (default is the <a href="http://wotkit.sensetecnic.com">WoTKit sandbox</a>) and login credentials must be provided.  Credentials can be either your WoTKit user name and password, or a key id and password associated with your account.
+    </p>
+    <p>
+       The sensor name should be in the form <code>{username}.{sensorname}</code> or you can use the numeric sensor id.
+    </p>
+    <p><strong>Note:</strong>  the first request will occur after the intial poll interval has elapsed, starting with data sent to the sensor after the node was deployed.
+    </p>
+
+</script>
+
 
 <!-- Node for WoTKit Credentials -->
 
@@ -266,6 +297,70 @@
         oneditprepare: function() {
         },
     });
+
+
+    /*
+     * Node for WoTKit Sensor Control Input
+     */
+
+    RED.nodes.registerType('wotkit control-in',{
+        category: 'input',
+        color:"rgb(231, 231, 174)",
+        defaults: {
+            name: {value:""},
+            timeout: {value:"10", validate:RED.validators.number()},
+            timeoutUnits: {value:"seconds"},
+            sensor: {required:true},
+            login: {type:"wotkit-credentials"},
+        },
+        inputs:0,
+        outputs:1,
+        icon: "white-globe.png",
+        label: function() {
+            if (this.name) {
+                return this.name;
+            } else if (this.sensor) {
+                return this.sensor;
+            } else {
+                return "wotkit control";
+            }
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            var root = RED.settings.httpNodeRoot;
+            if (root.slice(-1) == "/") {
+                root = root.slice(0,-1);
+            }
+            if (root == "") {
+                $("#node-input-tip").hide();
+            } else {
+                $("#node-input-path").html(root);
+                $("#node-input-tip").show();
+            }
+            $( "#node-input-timeout" ).spinner({min:1,max:60});
+            if (!this.timeoutUnits) {
+                $("#node-input-timeoutUnits option").filter(function() {
+                  return $(this).val() == 'seconds';
+                }).attr('selected', true);
+            }
+
+        }
+
+    });
+
+
+
+
+
+
+
+
+
+
+
+
 
     
 
