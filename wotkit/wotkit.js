@@ -204,7 +204,7 @@ module.exports = function(RED) {
                                };
 
         doHTTPRequest(url, method, node, msg, function(msg){
-                             var data = JSON.parse(msg.data);
+                             var data = JSON.parse(msg.payload);
                              subscription = data.subscription;
                              node.active = true; //activate recursive pull
                              node.pollWotkitEvents();
@@ -267,13 +267,13 @@ module.exports = function(RED) {
     *  @param	node 		Required: The node object. Used for credentials, name and debug messages
     *  @param	msg 		msg.payload (data to be sent), msg.headers (any headers)
     *  @param	callback 	If given this function will be called on success.
-    *  @return		        The msg object with the response from the server.
     **/
     function doHTTPRequest (url, method, node, msg, callback) {
 
         var opts = urllib.parse(url);
         opts.method = method;        
         opts.headers = msg.headers || {};
+        var payload = null;
 
         /*Normalize headers*/
         if (msg.headers) {
@@ -294,8 +294,6 @@ module.exports = function(RED) {
             opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
         }
 
-        var payload = null;
-    
         if (msg.payload && (method == "POST" || method == "PUT") ) {
             payload = JSON.stringify(msg.payload);
             if (opts.headers['content-type'] == null) {
@@ -313,21 +311,20 @@ module.exports = function(RED) {
             res.on('data',function(chunk) {
                 result += chunk;
             });
+
             res.on('end',function() {
-                msg.payload = JSON.stringify(result);
-                msg.data = result; 
+                msg.payload = result;
                 node.status({});
                     
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
                     node.active = false;
-                } else  if (opts.method === 'GET') { //TODO: this only needs to be done if a get
+                } else  if (opts.method === 'GET') { //Only needs to be done if a GET
                     var json = JSON.parse(result) || {};
 
                     json.forEach(function(item, index){
 
                         if (node.lastId == null  || node.lastId < item.id){
-                            // payload.push(item);
                             if (index === json.length-1){
                                 node.lastId = item.id;
                             }
@@ -336,15 +333,19 @@ module.exports = function(RED) {
                             delete item["sensor_id"];
                             delete item["sensor_name"];
                             msg.payload = item;
-                            node.send(msg);
+                            node.send(msg); //send an event for each item
                         }
                     });
-                } else { node.send (msg); }
+                } else { 
+                    node.send (msg); //otherwise send an event for the received message
+                }
+
                 if (callback && node.active) { //only if node is not closed or no error
                     callback(msg);
                 }
 
             });
+
             }).on('error', function(e){
                 node.warn ("Got Error: "+e.message);
             });
@@ -352,9 +353,8 @@ module.exports = function(RED) {
         if (payload) {
             req.write(payload);
         }
+
         req.end();
-        
-        return msg;
 
     }
 
