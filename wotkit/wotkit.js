@@ -203,7 +203,7 @@ module.exports = function(RED) {
 
         node.pollWotkitEvents = function pullControl() {    
                                  //pull when we have the subscription
-                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout; //TODO: remove 1
+                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
                                  var method = "GET";
                                  var msg = {};
                                  doHTTPRequest(url, method, node, msg, function() { node.pollWotkitEvents() });    
