@@ -69,7 +69,7 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("wotkit data-in",WotkitDataIn);
+    RED.nodes.registerType("wotkit in",WotkitDataIn);
   
     /*
      * Node for WoTKit Sensor Output
@@ -112,7 +112,7 @@ module.exports = function(RED) {
             doHTTPRequest(url, method, node, msg);
         });
     }
-    RED.nodes.registerType("wotkit data-out",WotkitDataOut);
+    RED.nodes.registerType("wotkit out",WotkitDataOut);
 
 
     /*

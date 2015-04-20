@@ -1,5 +1,5 @@
 <!-- Node for WoTKit Sensor Input -->
-<script type="text/x-red" data-template-name="wotkit data-in">
+<script type="text/x-red" data-template-name="wotkit in">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
@@ -22,7 +22,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="wotkit data-in">
+<script type="text/x-red" data-help-name="wotkit in">
 
     <p>Provides retrieving data from a WoTKit. This node does not currently retrieve data from the past, or previous sensor readings, only new data sent to a WoTKit sensor after this node is deployed.</p>
     
@@ -42,7 +42,7 @@
 
 <!-- Node for WoTKit Sensor Output -->
 
-<script type="text/x-red" data-template-name="wotkit data-out">
+<script type="text/x-red" data-template-name="wotkit out">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i> Log in as</label>
         <input type="text" id="node-input-login">
@@ -57,7 +57,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="wotkit data-out">
+<script type="text/x-red" data-help-name="wotkit out">
     <p>Provides adding data to a registered WoTKit sensor. The node will use the <code>message.payload</code> to create a data object.</p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pairs matching the sensor fields. For example a sensor with the default fields expects:</p>
@@ -183,7 +183,7 @@
      * Node for WoTKit Sensor Input
      */
 
-    RED.nodes.registerType('wotkit data-in',{
+    RED.nodes.registerType('wotkit in',{
         category: 'input',
         color:"rgb(231, 231, 174)",
         defaults: {
@@ -235,7 +235,7 @@
      * Node for WoTKit Sensor Output
      */
 
-    RED.nodes.registerType('wotkit data-out',{
+    RED.nodes.registerType('wotkit out',{
         category: 'output',
         color:"rgb(231, 231, 174)",
         defaults: {
