@@ -13,5 +13,6 @@
         "nodes": {
             "wotkit": "wotkit/wotkit.js"
         }
-    }
+    },
+    "author": "Sense Tecnic Systems <rcalderon@sensetecnic.com> (http://sensetecnic.com)"
 }
