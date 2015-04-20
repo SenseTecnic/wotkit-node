@@ -16,7 +16,7 @@ npm install git+ssh://git@github.com:SenseTecnic/wotkit-node.git
 or use the stable release published as an npm module:
 
 ```
-cde node-red
+cd node-red
 npm node-red-contrib-wotkit
 ```
 
