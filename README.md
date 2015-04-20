@@ -6,10 +6,21 @@ An input and output WoTKit Node for [Node-RED](http://nodered.org).
 
 These nodes can be installed using npm.
 
-To install
+To install you can either use the latest code:
 
-    cd node-red
-    npm install git+ssh://git@github.com:SenseTecnic/wotkit-node.git
+```
+cd node-red
+npm install git+ssh://git@github.com:SenseTecnic/wotkit-node.git
+```
+
+or use the stable release published as an npm module:
+
+```
+cde node-red
+npm node-red-contrib-wotkit
+```
+
+
 
 ## Contributing
 
