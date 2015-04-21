@@ -186,7 +186,6 @@ module.exports = function(RED) {
         this.sensor = n.sensor;
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.querytimeout = n.timeout; //already in seconds.
-        this.active = true;
         this.name = n.name;
 
         //register listener
@@ -195,25 +194,29 @@ module.exports = function(RED) {
         var msg = {'headers' : {'content-type': 'application/json'}};
         var subscription = null;
 
-        node.pollWotkitEvents = function pullControl() {    
-                                 //pull when we have the subscription
-                                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
-                                 var method = "GET";
-                                 var msg = {};
-                                 doHTTPRequest(url, method, node, msg, function() { node.pollWotkitEvents() });    
-                               };
-
+        //Subscribe 
         doHTTPRequest(url, method, node, msg, function(msg){
-                             var data = JSON.parse(msg.payload);
-                             subscription = data.subscription;
-                             node.active = true; //activate recursive pull
-                             node.pollWotkitEvents();
-                });     
-
-
+            var data = JSON.parse(msg.payload);
+            subscription = data.subscription;
+            //pull events when finished
+            node.pollWotkitEvents = setTimeout (function pollEvents(){
+                var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
+                var method = "GET";
+                var msg = {};           
+                node.WoTKitRequest = doHTTPRequest(url, method, node, msg, function() {
+                                                                               node.pollWotkitEvents = setTimeout(pollEvents,0) 
+                                                                           });
+            });
+        });
 
         this.on('close', function(){
-            this.active = false; //deactivate recursive pull
+            //clean up
+            if (this.pollWotkitEvents != null ) {
+                clearTimeout( this.pollWotkitEvents );
+                this.pollWotkitEvents = null;
+            }
+            //abort any requests ongoing
+            this.WoTKitRequest.abort(); 
         });
 
     }
@@ -267,6 +270,7 @@ module.exports = function(RED) {
     *  @param	node 		Required: The node object. Used for credentials, name and debug messages
     *  @param	msg 		msg.payload (data to be sent), msg.headers (any headers)
     *  @param	callback 	If given this function will be called on success.
+    *  @return 			The request object
     **/
     function doHTTPRequest (url, method, node, msg, callback) {
 
@@ -318,7 +322,6 @@ module.exports = function(RED) {
                     
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
-                    node.active = false;
                 } else  if (opts.method === 'GET') { //Only needs to be done if a GET
                     var json = JSON.parse(result) || {};
 
@@ -335,18 +338,22 @@ module.exports = function(RED) {
                             node.send(msg); //send an event for each item
                         }
                     });
-                } else { 
+                } else {
                     node.send (msg); //otherwise send an event for the received message
                 }
 
-                if (callback && node.active) { //only if node is not closed or no error
+                if ( typeof callback === 'function' && callback != null ) {
                     callback(msg);
                 }
 
             });
 
-            }).on('error', function(e){
-                node.warn ("Got Error: "+e.message);
+            }).on('error', function(e){          
+                if (e.code == 'ECONNRESET'){ //connection hung up (mainly due to closing our connection)
+                    node.warn ("WoTKit hung up. OK when deploying a new flow.");
+                } else {
+                    node.warn ("Got Error: "+e.message);
+                }
             });
 
         if (payload) {
@@ -354,6 +361,8 @@ module.exports = function(RED) {
         }
 
         req.end();
+
+        return req; //So we can manage this long-pull request later (e.g. close it if needed)
 
     }
 
