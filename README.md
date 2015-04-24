@@ -2,7 +2,7 @@
 
 An input and output [WoTKit](http://wotkit.sensetecnic.com) Node for [Node-RED](http://nodered.org).
 
-You will need an account at [WoTKit](http://wotkit.sensetecnic.com).
+You will need a WoTKit account, you can register for free at [http://wotkit.sensetecnic.com](http://wotkit.sensetecnic.com).
 
 ## Installation
 
@@ -21,8 +21,6 @@ or use the stable release published as an npm module:
 cd node-red
 npm install node-red-contrib-wotkit
 ```
-
-
 
 ## Contributing
 
