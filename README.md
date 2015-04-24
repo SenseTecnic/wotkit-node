@@ -28,4 +28,4 @@ Contact us to contribute.
 
 ## Copyright and license
 
-Copyright 2015 [Sense Tecnic Systems, Inc.](http://www.sensetecnic.com) [the Apache 2.0 license](LICENSE).
+Copyright 2015 [Sense Tecnic Systems, Inc.](http://www.sensetecnic.com) [the Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
