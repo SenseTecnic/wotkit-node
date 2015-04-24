@@ -1,6 +1,8 @@
 # WoTKit Nodes for Node-RED
 
-An input and output WoTKit Node for [Node-RED](http://nodered.org).
+An input and output [WoTKit](http://wotkit.sensetecnic.com) Node for [Node-RED](http://nodered.org).
+
+You will need an account at [WoTKit](http://wotkit.sensetecnic.com).
 
 ## Installation
 
