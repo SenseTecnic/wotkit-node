@@ -1,6 +1,6 @@
 # WoTKit Nodes for Node-RED
 
-An input and output [WoTKit](http://wotkit.sensetecnic.com) Node for [Node-RED](http://nodered.org).
+An input and output [WoTKit](http://wotkit.sensetecnic.com) Node for [Node-RED](http://nodered.org). This node allows you to publish and retrieve data to WoTKit and to access the real-time control channel of sensors.
 
 You will need a WoTKit account, you can register for free at [http://wotkit.sensetecnic.com](http://wotkit.sensetecnic.com).
 
