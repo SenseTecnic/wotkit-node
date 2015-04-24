@@ -1,7 +1,7 @@
 {
     "name"         : "node-red-contrib-wotkit",
     "version"      : "0.2.2",
-    "description"  : "A node to integrate with SenseTecnic's WoTKit IoT platform's API",
+    "description"  : "A node to integrate with Sense Tecnic's WoTKit IoT platform's API",
     "dependencies": {
     },
     "repository" : {
