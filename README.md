@@ -19,7 +19,7 @@ or use the stable release published as an npm module:
 
 ```
 cd node-red
-npm node-red-contrib-wotkit
+npm install node-red-contrib-wotkit
 ```
 
 
