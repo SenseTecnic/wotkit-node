@@ -252,16 +252,30 @@ module.exports = function(RED) {
       * @return		A String of parameters (key=value&key=value)
      **/
     function getUrlParamters(data) {
-        if (data === undefined || data === null) return "";
+        if (isEmpty(data)) return "";
         var params = Object.keys(data).map(function(k) {
                      //Only string and number parameters, nested objects will be ignored
                      if (typeof data[k] === 'string') {
-                         return encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
+                         return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]);
                      } else if (typeof data[k] ==='number') {
-                         return encodeURIComponent(k) + '=' + data[k]
+                         return encodeURIComponent(k) + '=' + data[k];
                      }
                     }).join('&');
         return params;
+
+    }
+
+    /**
+    * Checks if an object has keys.
+    * @param obj Required: an object (or non-object)
+    * @return true if empty, false if it has keys
+    **/
+    function isEmpty(obj) {
+        for(var prop in obj) {
+            if(obj.hasOwnProperty(prop))
+                return false;
+        }
+        return true;
     }
 
     /**
