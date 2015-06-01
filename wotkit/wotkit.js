@@ -70,7 +70,7 @@ module.exports = function(RED) {
     }
 
     RED.nodes.registerType("wotkit in",WotkitDataIn);
-  
+
     /*
      * Node for WoTKit Sensor Output
      */
@@ -92,7 +92,7 @@ module.exports = function(RED) {
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.on("input",function(msg) {
 
-            // Accepted formats: Formated Object. 
+            // Accepted formats: Formated Object.
             // String, number: will create a {value:msg.payload} object.
             // Json string "{}" will be made an object
             if (typeof msg.payload === "number"){
@@ -137,7 +137,7 @@ module.exports = function(RED) {
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.on("input",function(msg) {
 
-            // Accepted formats: Formated Object. 
+            // Accepted formats: Formated Object.
             // String, number: will create a {slider:msg.payload} object.
             // Json string "{}" will be made an object
             // NOTE: This is to support JSON posting in the near future.
@@ -194,7 +194,7 @@ module.exports = function(RED) {
         var msg = {'headers' : {'content-type': 'application/json'}};
         var subscription = null;
 
-        //Subscribe 
+        //Subscribe
         doHTTPRequest(url, method, node, msg, function(msg){
             var data = JSON.parse(msg.payload);
             subscription = data.subscription;
@@ -202,9 +202,9 @@ module.exports = function(RED) {
             node.pollWotkitEvents = setTimeout (function pollEvents(){
                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
                 var method = "GET";
-                var msg = {};           
+                var msg = {};
                 node.WoTKitRequest = doHTTPRequest(url, method, node, msg, function() {
-                                                                               node.pollWotkitEvents = setTimeout(pollEvents,0) 
+                                                                               node.pollWotkitEvents = setTimeout(pollEvents,0)
                                                                            });
             });
         });
@@ -216,7 +216,7 @@ module.exports = function(RED) {
                 this.pollWotkitEvents = null;
             }
             //abort any requests ongoing
-            this.WoTKitRequest.abort(); 
+            this.WoTKitRequest.abort();
         });
 
     }
@@ -231,7 +231,7 @@ module.exports = function(RED) {
         this.url = n.url;
         if (this.credentials) {
             this.username = this.credentials.user;
-            this.password = this.credentials.password; 
+            this.password = this.credentials.password;
         }
     }
 
@@ -246,15 +246,16 @@ module.exports = function(RED) {
      * Utility functions for Http Requests
      */
 
-    /** 
+    /**
       * Parse JSON as parameters and encode to append to URL
       * @param	data	Required: Data to parse
       * @return		A String of parameters (key=value&key=value)
-     **/     
+     **/
     function getUrlParamters(data) {
+        if (data === undefined || data === null) return "";
         var params = Object.keys(data).map(function(k) {
                      //Only string and number parameters, nested objects will be ignored
-                     if (typeof data[k] === 'string') { 
+                     if (typeof data[k] === 'string') {
                          return encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
                      } else if (typeof data[k] ==='number') {
                          return encodeURIComponent(k) + '=' + data[k]
@@ -265,7 +266,7 @@ module.exports = function(RED) {
 
     /**
     *  Makes a call to the WoTKit API
-    *  @param	url		Required: The complete URL 
+    *  @param	url		Required: The complete URL
     *  @param	method		Required: The HTTP Method of this request
     *  @param	node 		Required: The node object. Used for credentials, name and debug messages
     *  @param	msg 		msg.payload (data to be sent), msg.headers (any headers)
@@ -275,7 +276,7 @@ module.exports = function(RED) {
     function doHTTPRequest (url, method, node, msg, callback) {
 
         var opts = urllib.parse(url);
-        opts.method = method;        
+        opts.method = method;
         opts.headers = msg.headers || {};
         var payload = null;
 
@@ -292,7 +293,7 @@ module.exports = function(RED) {
                     opts.headers[name] = msg.headers[v];
                 }
             }
-        } 
+        }
 
         if (node.login.credentials && node.login.credentials.user) {
             opts.auth = node.login.credentials.user+":"+(node.login.credentials.password||"");
@@ -306,12 +307,12 @@ module.exports = function(RED) {
         }
 
         var req = ((/^https/.test(url))?https:http).request(opts,function(res) {
-                
+
             var result = "";
             res.setEncoding('utf8');
             msg.statusCode = res.statusCode;
             msg.headers = res.headers;
-                
+
             res.on('data',function(chunk) {
                 result += chunk;
             });
@@ -319,7 +320,7 @@ module.exports = function(RED) {
             res.on('end',function() {
                 msg.payload = result;
                 node.status({});
-                    
+
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.error ("Node "+node.name + ": "+msg.payload);
                 } else  if (opts.method === 'GET') { //Only needs to be done if a GET
@@ -348,7 +349,7 @@ module.exports = function(RED) {
 
             });
 
-            }).on('error', function(e){          
+            }).on('error', function(e){
                 if (e.code == 'ECONNRESET'){ //connection hung up (mainly due to closing our connection)
                     node.warn ("WoTKit hung up. OK when deploying a new flow.");
                 } else {
