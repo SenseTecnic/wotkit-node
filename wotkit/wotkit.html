@@ -118,13 +118,9 @@
     <p>
        The sensor name should be in the form <code>{username}.{sensorname}</code> or you can use the numeric sensor id.
     </p>
-<!--
-    <p>The Before value specifies how to retrieve sensor data. </p>
-    <p>Selecting "Events" will </p>
-    <p>The poll interval specifies how often this node calls the WoTKit to retrieve new sensor data.  </p>
-    <p><strong>Note:</strong>  the first request will occur after the intial poll interval has elapsed, starting with data sent to the sensor after the node was deployed.
-    </p>
--->
+
+    <p>Selecting "Elements" will retrieve the last X number of data elements.</p>
+    <p>Selecting "Seconds" will retrieve any data elements created in the last X seconds. For example "10 Seconds" will retrieve all elements created after 10 seconds before the node received an input message.</p>
 
 </script>
 
@@ -256,7 +252,7 @@
         labelStyle: function() {
             return this.name?"node_label_italic":"";
         }
-        
+
     });
 
 
