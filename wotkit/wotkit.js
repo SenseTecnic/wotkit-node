@@ -58,6 +58,7 @@ module.exports = function(RED) {
 
 
         var url = this.url+"/api/sensors/"+node.sensor+"/data?before="+node.querytimeout;
+        //var url = "http://localhost/wotkit-php/php-client/example-error.php"; //REplicating 400 error
         node.pollWotkitData = setInterval(function() {
             doHTTPRequest(url, method, node, msg);
         },this.timeout);
@@ -66,6 +67,7 @@ module.exports = function(RED) {
             if (this.pollWotkitData != null) {
                 clearInterval(this.pollWotkitData);
             }
+            node.status({});
         });
     }
 
@@ -111,8 +113,52 @@ module.exports = function(RED) {
             var method = "POST";
             doHTTPRequest(url, method, node, msg);
         });
+
+        this.on('close', function(){
+            node.status({});
+        });
+
     }
     RED.nodes.registerType("wotkit out",WotkitDataOut);
+
+
+    /*
+    * Node for WotKit Raw Data Retrieve
+    */
+
+    function WotkitDataRetrieve(n) {
+      RED.nodes.createNode(this,n);
+      var node = this;
+
+      if (!n.sensor) {
+          node.error("No sensor specified");
+          return;
+      }
+
+      this.login = RED.nodes.getNode(n.login);// Retrieve the config node
+      if (!this.login) {
+          node.error("No credentials specified");
+          return;
+      }
+      this.sensor = n.sensor;
+      this.url = this.login.url || "http://wotkit.sensetecnic.com";
+
+      var beforeType = n.beforeType === "elements" ? "beforeE" : "before";
+      var before = beforeType === "before"? n.before * 1000 : n.before;
+      var method = "GET";
+      var msg = {};
+      var url = this.url+"/api/sensors/"+node.sensor+"/data?"+beforeType+"="+before;
+
+      this.on('input',function(msg){
+        doHTTPRequest(url, method, node, msg);
+      });
+
+      this.on('close', function(){
+          node.status({});
+      });
+
+    }
+    RED.nodes.registerType("wotkit", WotkitDataRetrieve);
 
 
     /*
@@ -159,6 +205,9 @@ module.exports = function(RED) {
             var url = node.url+"/api/sensors/"+node.sensor+"/message?"+urlparams;
             var method = "POST";
             doHTTPRequest(url, method, node, msg);
+        });
+        this.on('close', function(){
+            node.status({});
         });
     }
     RED.nodes.registerType("wotkit control-out",WotkitControlOut);
@@ -217,8 +266,8 @@ module.exports = function(RED) {
             }
             //abort any requests ongoing
             this.WoTKitRequest.abort();
+            node.status({});
         });
-
     }
 
     RED.nodes.registerType("wotkit control-in",WotkitControlIn);
@@ -331,13 +380,16 @@ module.exports = function(RED) {
                 result += chunk;
             });
 
+
+
             res.on('end',function() {
                 msg.payload = result;
-                node.status({});
 
                 if (res.statusCode != 201 && res.statusCode != 200){
-                    node.error ("Node "+node.name + ": "+msg.payload);
-                } else  if (opts.method === 'GET') { //Only needs to be done if a GET
+                    node.warn ("WoTKit Error: "+ msg.payload);
+                    node.log("WoTkit Error:\n" +msg.payload);
+                    node.status({fill:"red",shape:"dot",text:"WoTkit Error: "+res.statusCode});
+                } else  if (opts.method === 'GET') { // GET CASE
                     var json = JSON.parse(result) || {};
 
                     json.forEach(function(item, index){
@@ -353,8 +405,10 @@ module.exports = function(RED) {
                             node.send(msg); //send an event for each item
                         }
                     });
-                } else {
+                    node.status({fill:"green",shape:"dot",text:"OK"});
+                } else { // POST CASE
                     node.send (msg); //otherwise send an event for the received message
+                    node.status({fill:"green",shape:"dot",text:"OK"});
                 }
 
                 if ( typeof callback === 'function' && callback != null ) {
@@ -363,12 +417,15 @@ module.exports = function(RED) {
 
             });
 
-            }).on('error', function(e){
+          }).on('error', function(e){
                 if (e.code == 'ECONNRESET'){ //connection hung up (mainly due to closing our connection)
                     node.warn ("WoTKit hung up. OK when deploying a new flow.");
+                    node.status({fill:"red",shape:"dot",text:"WoTKit hung up."});
                 } else {
                     node.warn ("Got Error: "+e.message);
+                    node.status({fill:"red",shape:"dot",text:"Error."});
                 }
+
             });
 
         if (payload) {
