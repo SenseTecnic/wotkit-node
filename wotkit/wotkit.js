@@ -158,7 +158,7 @@ module.exports = function(RED) {
       });
 
     }
-    RED.nodes.registerType("wotkit", WotkitDataRetrieve);
+    RED.nodes.registerType("wotkit data", WotkitDataRetrieve);
 
 
     /*

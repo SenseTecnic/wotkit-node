@@ -25,7 +25,9 @@
 
 <script type="text/x-red" data-help-name="wotkit in">
 
-    <p>Provides retrieving data from a WoTKit sensor. This node retrieves data sent to a WoTKit sensor after this node is deployed.</p>
+    <p>WoTKit Sensor Input Node</p>
+
+    <p>Retrieves new data from a WoTKit Sensor.  This node retrieves data sent to a WoTKit sensor after this node is deployed.</p>
 
     <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
@@ -59,7 +61,10 @@
 </script>
 
 <script type="text/x-red" data-help-name="wotkit out">
-    <p>Provides adding data to a registered WoTKit sensor. The node will use the <code>message.payload</code> to create a data object.</p>
+
+    <p>WoTKit Sensor Output Node</p>
+
+    <p>Sends data to a registered WoTKit sensor. The node will use the <code>message.payload</code> to create a data object.</p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pairs matching the sensor fields. For example a sensor with the default fields expects:</p>
     <pre>msg.payload = {
@@ -83,7 +88,7 @@
 
 <!-- Node for WoTKit Sensor Raw Data Request -->
 
-<script type="text/x-red" data-template-name="wotkit">
+<script type="text/x-red" data-template-name="wotkit data">
     <div class="form-row">
         <label for="node-input-login"><i class="fa fa-user"></i>Log in as</label>
         <input type="text" id="node-input-login">
@@ -106,9 +111,11 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="wotkit">
+<script type="text/x-red" data-help-name="wotkit data">
 
-    <p>Provides retrieving historical data from WoTKit by either number of elements or relative time before the request.</p>
+    <p>WoTKit Historical Data Node</p>
+
+    <p>Retrieves historical data from a WoTKit sensor by either number of elements or relative time before the request.</p>
 
     <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
@@ -144,6 +151,9 @@
 </script>
 
 <script type="text/x-red" data-help-name="wotkit control-out">
+
+    <p>WoTKit Control Output Node</p>
+
     <p>Provides ability to send events to the control channel of a registered WoTKit sensor. This node will use the <code>message.payload</code> object to create a control event.</p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pair for each message. For example, to send a control <code>button: on</code> message:</p>
@@ -166,7 +176,7 @@
 </script>
 
 
-<!-- TODO: Node for WoTKit Control Input -->
+<!-- Node for WoTKit Control Input -->
 
 <script type="text/x-red" data-template-name="wotkit control-in">
     <div class="form-row">
@@ -185,7 +195,9 @@
 
 <script type="text/x-red" data-help-name="wotkit control-in">
 
-    <p>Provides access (reading) the control channel of a WoTKit sensor. This node will create a <code>message.payload</code> object containing the event received.</p>
+    <p>WoTKit Control Input Node</p>
+
+    <p>Provides access to the control channel of a WoTKit sensor. When a control event is received by a WoTKit sensor this node will create a <code>message.payload</code> object containing the event.</p>
 
     <p>
        To use this node, the WoTKit URL (default is the <a href="http://wotkit.sensetecnic.com">WoTKit sandbox</a>) and login credentials must be provided.  Credentials can be either your WoTKit user name and password, or a key id and password associated with your account.
@@ -246,7 +258,7 @@
             } else if (this.sensor) {
                 return this.sensor;
             } else {
-                return "wotkit data";
+                return "wotkit in";
             }
         },
         labelStyle: function() {
@@ -278,7 +290,7 @@
             } else if (this.sensor) {
                 return this.sensor;
             } else {
-                return "wotkit data";
+                return "wotkit out";
             }
         },
         labelStyle: function() {
@@ -294,7 +306,7 @@
      * Node for WoTKit Sensor Data Retrieval
      */
 
-    RED.nodes.registerType('wotkit',{
+    RED.nodes.registerType('wotkit data',{
         category: 'WoTKit Data',
         color:"rgb(250, 250, 250)",
         defaults: {
@@ -388,10 +400,6 @@
         }
 
     });
-
-
-
-
 
 
     /*
