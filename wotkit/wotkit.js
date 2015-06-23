@@ -246,16 +246,20 @@ module.exports = function(RED) {
         //Subscribe
         doHTTPRequest(url, method, node, msg, function(msg){
             var data = JSON.parse(msg.payload);
-            subscription = data.subscription;
-            //pull events when finished
-            node.pollWotkitEvents = setTimeout (function pollEvents(){
+            if (data !== null) {
+              subscription = data.subscription;
+              //pull events when finished
+              node.pollWotkitEvents = setTimeout (function pollEvents(){
                 var url = node.url+"/api/control/sub/"+subscription+"?wait="+node.querytimeout;
                 var method = "GET";
                 var msg = {};
                 node.WoTKitRequest = doHTTPRequest(url, method, node, msg, function() {
                                                                                node.pollWotkitEvents = setTimeout(pollEvents,0)
                                                                            });
-            });
+              });
+            } else {
+              node.error ("Wrong credentials or non-existent sensor.");
+            }
         });
 
         this.on('close', function(){
