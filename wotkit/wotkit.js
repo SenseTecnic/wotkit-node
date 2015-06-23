@@ -269,8 +269,10 @@ module.exports = function(RED) {
                 clearTimeout( this.pollWotkitEvents );
                 this.pollWotkitEvents = null;
             }
-            //abort any requests ongoing
-            this.WoTKitRequest.abort();
+            if (this.WoTKitRequest != null) {
+                //abort any requests ongoing
+                this.WoTKitRequest.abort();
+            }                        
             node.status({});
         });
     }
