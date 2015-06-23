@@ -246,7 +246,7 @@ module.exports = function(RED) {
         //Subscribe
         doHTTPRequest(url, method, node, msg, function(msg){
             var data = JSON.parse(msg.payload);
-            if (data !== null) {
+            if (data !== null && data.hasOwnProperty('subscription')) {
               subscription = data.subscription;
               //pull events when finished
               node.pollWotkitEvents = setTimeout (function pollEvents(){
