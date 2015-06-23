@@ -6,25 +6,27 @@ To make use of these nodes you will need a WoTKit account.  You can register for
 
 ## Dependencies
 
-These nodes can be used with [Node-RED](http://nodered.org/docs/index.html). You can install node red.
+These nodes can be used with [Node-RED](http://nodered.org/docs/index.html). You can [install node red globally](http://nodered.org/docs/getting-started/installation.html) by doing:
 
+```
+sudo npm install -g node-red
+```
 
 ## Installation
 
 These nodes can be installed using npm.
 
-To install you can either use the latest code:
+To install globally, alongside node-red, you can either use the latest code from GitHub:
 
 ```
-cd node-red
-npm install git+ssh://git@github.com:SenseTecnic/wotkit-node.git
+sudo npm install -g SenseTecnic/wotkit-node
 ```
 
 or use the stable release published as an npm module:
 
 ```
 cd node-red
-npm install node-red-contrib-wotkit
+npm install -g node-red-contrib-wotkit
 ```
 
 ## Contributing
