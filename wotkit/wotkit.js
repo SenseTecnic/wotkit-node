@@ -5,12 +5,13 @@ module.exports = function(RED) {
     var urllib = require("url");
     var express = require("express");
     var getBody = require('raw-body');
-    var mustache = require("mustache");
-    var querystring = require("querystring");
-
-    var cors = require('cors');
     var jsonParser = express.json();
     var urlencParser = express.urlencoded();
+
+    //TODO: remove in next version
+    //var mustache = require("mustache");
+    //var querystring = require("querystring");
+    //var cors = require('cors');
 
     function rawBodyParser(req, res, next) {
         if (req._body) { return next(); }
@@ -388,7 +389,6 @@ module.exports = function(RED) {
 
             res.on('end',function() {
                 msg.payload = result;
-
                 if (res.statusCode != 201 && res.statusCode != 200){
                     node.warn ("WoTKit Error: "+ msg.payload);
                     node.log("WoTkit Error:\n" +msg.payload);
@@ -411,7 +411,9 @@ module.exports = function(RED) {
                     });
                     node.status({fill:"green",shape:"dot",text:"OK"});
                 } else { // POST CASE
-                    node.send (msg); //otherwise send an event for the received message
+                    if ( msg.payload.indexOf('subscription') === -1 ) { //if not subscription message
+                      node.send (msg); //send an event for the received message
+                    }
                     node.status({fill:"green",shape:"dot",text:"OK"});
                 }
 
