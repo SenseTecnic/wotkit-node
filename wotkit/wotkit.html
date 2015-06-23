@@ -29,6 +29,10 @@
 
     <p>Retrieves new data from a WoTKit Sensor.  This node retrieves data sent to a WoTKit sensor after this node is deployed.</p>
 
+    <p>
+      To use this node you need to create a <a href="http://wotkit.sensetecnic.com">WoTKit</a> account. You also need to <a href="https://wotkit.sensetecnic.com/wotkit/home/me#page-1">create a sensor</a> in WoTKit.
+    </p>
+
     <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
     <p>
@@ -65,6 +69,10 @@
     <p>WoTKit Sensor Output Node</p>
 
     <p>Sends data to a registered WoTKit sensor. The node will use the <code>message.payload</code> to create a data object.</p>
+
+    <p>
+      To use this node you need to create a <a href="http://wotkit.sensetecnic.com">WoTKit</a> account. You also need to <a href="https://wotkit.sensetecnic.com/wotkit/home/me#page-1">create a sensor</a> in WoTKit.
+    </p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pairs matching the sensor fields. For example a sensor with the default fields expects:</p>
     <pre>msg.payload = {
@@ -117,6 +125,10 @@
 
     <p>Retrieves historical data from a WoTKit sensor by either number of elements or relative time before the request.</p>
 
+    <p>
+      To use this node you need to create a <a href="http://wotkit.sensetecnic.com">WoTKit</a> account. You also need to <a href="https://wotkit.sensetecnic.com/wotkit/home/me#page-1">create a sensor</a> in WoTKit.
+    </p>
+
     <p>The <code>message.payload</code> contains a map of sensor field names to sensor values.
     </p>
     <p>
@@ -155,6 +167,10 @@
     <p>WoTKit Control Output Node</p>
 
     <p>Provides ability to send events to the control channel of a registered WoTKit sensor. This node will use the <code>message.payload</code> object to create a control event.</p>
+
+    <p>
+      To use this node you need to create a <a href="http://wotkit.sensetecnic.com">WoTKit</a> account. You also need to <a href="https://wotkit.sensetecnic.com/wotkit/home/me#page-1">create a sensor</a> in WoTKit.
+    </p>
 
     <p>The <code>message.payload</code> must contain an Object of key-value pair for each message. For example, to send a control <code>button: on</code> message:</p>
     <pre>msg.payload = {
@@ -197,7 +213,13 @@
 
     <p>WoTKit Control Input Node</p>
 
-    <p>Provides access to the control channel of a registered WoTKit sensor. When a control event is received by a WoTKit sensor this node will create a <code>message.payload</code> object containing the event.</p>
+    <p>
+      Provides access to the control channel of a registered WoTKit sensor. When a control event is received by a WoTKit sensor this node will create a <code>message.payload</code> object containing the event.
+    </p>
+
+    <p>
+      To use this node you need to create a <a href="http://wotkit.sensetecnic.com">WoTKit</a> account. You also need to <a href="https://wotkit.sensetecnic.com/wotkit/home/me#page-1">create a sensor</a> in WoTKit.
+    </p>
 
     <p>
        To use this node, the WoTKit URL (default is the <a href="http://wotkit.sensetecnic.com">WoTKit sandbox</a>) and login credentials must be provided.  Credentials can be either your WoTKit user name and password, or a key id and password associated with your account.

@@ -4,6 +4,11 @@ This package provides a set of input and output [Node-RED](http://nodered.org) n
 
 To make use of these nodes you will need a WoTKit account.  You can register for free at [http://wotkit.sensetecnic.com](http://wotkit.sensetecnic.com).
 
+## Dependencies
+
+These nodes can be used with [Node-RED](http://nodered.org/docs/index.html). You can install node red.
+
+
 ## Installation
 
 These nodes can be installed using npm.
