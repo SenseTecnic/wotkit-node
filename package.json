@@ -10,7 +10,7 @@
     },
     "repository" : {
         "type":"git",
-        "url":"https://github.com/SenseTecnic/wotkit-node/tree/0.2.2/wotkit"
+        "url":"https://github.com/SenseTecnic/wotkit-node/tree/0.2.6/wotkit"
     },
     "keywords": [ "node-red", "wotkit" , "iot", "sensor"],
     "node-red"     : {
