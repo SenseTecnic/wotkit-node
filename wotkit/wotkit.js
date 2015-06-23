@@ -258,7 +258,7 @@ module.exports = function(RED) {
                                                                            });
               });
             } else {
-              node.error ("Wrong credentials or non-existent sensor.");
+              node.error ("Non-existent sensor.");
             }
         });
 
