@@ -8,11 +8,6 @@ module.exports = function(RED) {
     var jsonParser = express.json();
     var urlencParser = express.urlencoded();
 
-    //TODO: remove in next version
-    //var mustache = require("mustache");
-    //var querystring = require("querystring");
-    //var cors = require('cors');
-
     function rawBodyParser(req, res, next) {
         if (req._body) { return next(); }
         req.body = "";
@@ -59,7 +54,6 @@ module.exports = function(RED) {
 
 
         var url = this.url+"/api/sensors/"+node.sensor+"/data?before="+node.querytimeout;
-        //var url = "http://localhost/wotkit-php/php-client/example-error.php"; //REplicating 400 error
         node.pollWotkitData = setInterval(function() {
             doHTTPRequest(url, method, node, msg);
         },this.timeout);
@@ -104,7 +98,6 @@ module.exports = function(RED) {
                 try { //if in JSON format
                     msg.payload = JSON.parse(msg.payload);
                 } catch (e) {
-                    //TODO: validate string (brackets, quotes, etc.)
                     msg.payload = {message: msg.payload};
                 }
             } //else if object carry on.
@@ -272,7 +265,7 @@ module.exports = function(RED) {
             if (this.WoTKitRequest != null) {
                 //abort any requests ongoing
                 this.WoTKitRequest.abort();
-            }                        
+            }
             node.status({});
         });
     }
@@ -387,8 +380,6 @@ module.exports = function(RED) {
                 result += chunk;
             });
 
-
-
             res.on('end',function() {
                 msg.payload = result;
                 if (res.statusCode != 201 && res.statusCode != 200){
@@ -412,11 +403,14 @@ module.exports = function(RED) {
                         }
                     });
                     node.status({fill:"green",shape:"dot",text:"OK"});
+
                 } else { // POST CASE
+
                     if ( msg.payload.indexOf('subscription') === -1 ) { //if not subscription message
                       node.send (msg); //send an event for the received message
                     }
                     node.status({fill:"green",shape:"dot",text:"OK"});
+
                 }
 
                 if ( typeof callback === 'function' && callback != null ) {
@@ -426,6 +420,7 @@ module.exports = function(RED) {
             });
 
           }).on('error', function(e){
+            
                 if (e.code == 'ECONNRESET'){ //connection hung up (mainly due to closing our connection)
                     node.warn ("WoTKit hung up. OK when deploying a new flow.");
                     node.status({fill:"red",shape:"dot",text:"WoTKit hung up."});
