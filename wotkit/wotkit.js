@@ -399,6 +399,7 @@ module.exports = function(RED) {
                             delete item["sensor_id"];
                             delete item["sensor_name"];
                             msg.payload = item;
+                            msg.headers = undefined; //delete request response headers
                             node.send(msg); //send an event for each item
                         }
                     });
@@ -420,7 +421,7 @@ module.exports = function(RED) {
             });
 
           }).on('error', function(e){
-            
+
                 if (e.code == 'ECONNRESET'){ //connection hung up (mainly due to closing our connection)
                     node.warn ("WoTKit hung up. OK when deploying a new flow.");
                     node.status({fill:"red",shape:"dot",text:"WoTKit hung up."});
