@@ -88,24 +88,25 @@ module.exports = function(RED) {
         this.sensor = n.sensor;
         this.url = this.login.url || "http://wotkit.sensetecnic.com";
         this.on("input",function(msg) {
+            if (msg.payload !== undefined) {
+                // Accepted formats: Formated Object.
+                // String, number: will create a {value:msg.payload} object.
+                // Json string "{}" will be made an object
+                if (typeof msg.payload === "number"){
+                    msg.payload = {value: msg.payload};
+                } else if (typeof msg.payload === "string"){
+                    try { //if in JSON format
+                        msg.payload = JSON.parse(msg.payload);
+                    } catch (e) {
+                        msg.payload = {message: msg.payload};
+                    }
+                } //else if object carry on.
 
-            // Accepted formats: Formated Object.
-            // String, number: will create a {value:msg.payload} object.
-            // Json string "{}" will be made an object
-            if (typeof msg.payload === "number"){
-                msg.payload = {value: msg.payload};
-            } else if (typeof msg.payload === "string"){
-                try { //if in JSON format
-                    msg.payload = JSON.parse(msg.payload);
-                } catch (e) {
-                    msg.payload = {message: msg.payload};
-                }
-            } //else if object carry on.
-
-            //post upstream msg to wotkit
-            var url = node.url+"/api/sensors/"+node.sensor+"/data";
-            var method = "POST";
-            doHTTPRequest(url, method, node, msg);
+                //post upstream msg to wotkit
+                var url = node.url+"/api/sensors/"+node.sensor+"/data";
+                var method = "POST";
+                doHTTPRequest(url, method, node, msg);
+            }
         });
 
         this.on('close', function(){
